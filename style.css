@@ -1,0 +1,412 @@
+html {
+
+
+    cursor: url("https://www.dropbox.com/scl/fi/1k27va6b9hfu71cds1xoq/cursor_pointer.png?rlkey=wyws08j0ljqmpazwbhud1pk2b&st=b4h0253a&dl=1"), auto;
+
+    input,
+    textarea {
+        caret-color: transparent;
+    }
+
+
+}
+
+
+head {
+
+    input,
+    textarea {
+        caret-color: transparent;
+    }
+}
+
+
+*#div_background {
+
+    background-image: url("https://64.media.tumblr.com/9d2c3e0b30fa8a9f65e634e3ed98260a/34dcf87999addb81-cd/s1280x1920/341ddd4d1b6b343db4c48f01d764e1b74e99e800.png");
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 960px;
+    height: 800px;
+
+}
+
+
+canvas {
+
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: -4;
+
+    border: 1px solid #101010;
+
+    margin: 0 auto;
+    display: block;
+    /* Puedes agregar más estilos personalizados aquí */
+
+}
+
+
+
+
+
+
+/* Aqui empieza style de la consola*/
+
+
+@font-face {
+    font-family: "Aseprite";
+    src: url("https://dl.dropbox.com/s/aqay5uygr9atxvv/AsepriteFont.ttf");
+}
+
+@keyframes parpadeo {
+    50% {
+        opacity: 0;
+        /* Hace el texto invisible en el 50% del tiempo */
+    }
+}
+
+.blink {
+    animation: parpadeo .5s infinite;
+    /* El texto parpadea cada segundo de manera infinita */
+}
+
+
+#form_clock {
+
+    display: block;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: 32px;
+    left: 864px;
+    width: 64px;
+    height: 32px;
+    background-color: #222034;
+
+}
+
+#form_bag {
+
+    display: block;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: 68px;
+    left: 864px;
+    width: 64px;
+    height: 32px;
+    background-color: #222034;
+}
+
+/* Pantalla del arcade*/
+#form {
+    display: none;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 704px;
+    height: 480px;
+    /* background-color: #222034;*/
+    background-image: url('https://64.media.tumblr.com/17f975fcde6fed4545f99f8818469d3a/aa89983a07d63733-c3/s1280x1920/f171f3000a455113ec3a5f7678a39a6f5cdb009a.png');
+
+    cursor: url("https://dl.dropbox.com/s/abto0cel1f05d3c/cursor_text.png"), text;
+}
+
+
+#form_open_bag {
+    display: none;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 704px;
+    height: 480px;
+    background-image: url('https://64.media.tumblr.com/17f975fcde6fed4545f99f8818469d3a/aa89983a07d63733-c3/s1280x1920/f171f3000a455113ec3a5f7678a39a6f5cdb009a.png');
+
+
+}
+
+::-webkit-scrollbar {
+    -webkit-appearance: none;
+    width: 0px;
+    background-color: #222034;
+}
+
+
+::selection {
+    color: #f2f2aa;
+    background: #d77bba;
+}
+
+#img {
+    position: absolute;
+    top: 20%;
+    left: 20%;
+    transform: translate(-50%, -50%);
+}
+
+#div_clock {
+    display: block;
+    align-items: center;
+    justify-content: center;
+    align-items: center;
+    width: 64px;
+    height: 32px;
+    background-color: #222034;
+    cursor: url("https://dl.dropbox.com/s/k22esvz5npo7z5b/cursor_auto.png"), pointer;
+}
+
+#div_bag {
+    display: block;
+    align-items: center;
+    justify-content: center;
+    align-items: center;
+    width: 64px;
+    height: 32px;
+    background-color: #222034;
+    cursor: url("https://dl.dropbox.com/s/k22esvz5npo7z5b/cursor_auto.png"), pointer;
+}
+
+#div_use_button {
+    position: absolute;
+    display: block;
+    align-items: center;
+    justify-content: center;
+    top: 410px;
+    right: 508px;
+    width: 64px;
+    height: 32px;
+    background-color: #222034;
+    cursor: url("https://dl.dropbox.com/s/k22esvz5npo7z5b/cursor_auto.png"), pointer;
+}
+
+#div_code_button {
+    position: absolute;
+    display: block;
+    align-items: center;
+    justify-content: center;
+    top: 410px;
+    right: 608px;
+    width: 64px;
+    height: 32px;
+    background-color: #222034;
+    cursor: url("https://dl.dropbox.com/s/k22esvz5npo7z5b/cursor_auto.png"), pointer;
+}
+
+
+
+
+
+
+#div_form {
+    position: relative;
+    top: 32px;
+    left: 32px;
+    Overflow-y: scroll;
+    width: 640px;
+    height: 416px;
+
+}
+
+#div_open_bag {
+    position: relative;
+    top: 32px;
+    left: 32px;
+    Overflow-y: scroll;
+    width: 640px;
+    height: 320px;
+}
+
+#div_open_bag_header {
+    position: relative;
+    top: 32px;
+    left: 32px;
+    Overflow-y: scroll;
+
+    width: 640px;
+    background-color: #222034;
+}
+
+#form_open_bag a:hover {
+    background-color: #d77bba;
+}
+
+#form_open_bag a {
+    color: #f2f2aa;
+    font-family: Aseprite;
+    font-size: 32px;
+    border-color: #222034;
+    outline-offset: 0px;
+    outline: none;
+    border: 1px #222034;
+    text-align: left;
+    text-decoration: none;
+}
+
+h8 {
+    color: #f2f2aa;
+    font-family: Aseprite;
+    font-size: 32px;
+    border-color: #222034;
+    outline-offset: 0px;
+    outline: none;
+    border: 1px #222034;
+
+}
+
+
+button {
+    color: #f2f2aa;
+    font-family: Aseprite;
+    font-size: 32px;
+    border-color: #222034;
+    outline-offset: 0px;
+    outline: none;
+    border: 0px #222034;
+    text-align: center;
+    background-color: #222034;
+    padding: 0px 0px 0px 0px;
+}
+
+
+
+#menu {
+    font-family: Aseprite;
+    text-align: right;
+    font-size: 32px;
+    margin: 20px 0px 0px 0px;
+}
+
+#up {
+    color: #f2f2aa;
+    font-family: Aseprite;
+    text-align: center;
+    font-size: 32px;
+    margin: 20px 0px 20px;
+}
+
+#intro {
+    background-color: #1c1c2e;
+    border-color: #222034;
+    outline-offset: 0px;
+    outline: none;
+    border: 1px #222034;
+    color: #f2f2aa;
+    font-family: Aseprite;
+    font-size: 32px;
+    width: 450px;
+    text-transform: uppercase;
+    cursor: url("https://dl.dropbox.com/s/abto0cel1f05d3c/cursor_text.png"), text;
+
+
+
+}
+
+#user {
+    background-color: #1c1c2e;
+    border-color: #222034;
+    outline-offset: 0px;
+    border: 1px #222034;
+    outline: none;
+    color: #f2f2aa;
+    font-family: Aseprite;
+    font-size: 32px;
+    width: 450px;
+    text-transform: uppercase;
+    cursor: url("https://dl.dropbox.com/s/abto0cel1f05d3c/cursor_text.png"), text;
+}
+
+#password {
+    -webkit-text-security: square;
+    background-color: #1c1c2e;
+    border-color: #222034;
+    outline-offset: 0px;
+    border: 1px #222034;
+    outline: none;
+    color: #f2f2aa;
+    font-family: Aseprite;
+    font-size: 22px;
+    width: 450px;
+    text-transform: uppercase;
+    cursor: url("https://dl.dropbox.com/s/abto0cel1f05d3c/cursor_text.png"), text;
+
+}
+
+#password2 {
+    -webkit-text-security: square;
+    background-color: #1c1c2e;
+    border-color: #222034;
+    outline-offset: 0px;
+    border: 1px #222034;
+    outline: none;
+    color: #f2f2aa;
+    font-family: Aseprite;
+    font-size: 22px;
+    width: 450px;
+    text-transform: uppercase;
+    cursor: url("https://dl.dropbox.com/s/abto0cel1f05d3c/cursor_text.png"), text;
+}
+
+#command_line {
+    background-color: #1c1c2e;
+    border-color: #222034;
+    outline-offset: 0px;
+    outline: none;
+    border: 1px #222034;
+    color: #f2f2aa;
+    font-family: Aseprite;
+    font-size: 32px;
+    width: 450px;
+    text-transform: uppercase;
+    cursor: url("https://dl.dropbox.com/s/abto0cel1f05d3c/cursor_text.png"), text;
+}
+
+#command_line2 {
+    background-color: #1c1c2e;
+    border-color: #222034;
+    outline-offset: 0px;
+    outline: none;
+    border: 1px #222034;
+    color: #f2f2aa;
+    font-family: Aseprite;
+    font-size: 32px;
+    width: 450px;
+    text-transform: uppercase;
+    cursor: url("https://dl.dropbox.com/s/abto0cel1f05d3c/cursor_text.png"), text;
+}
+
+table {
+    font-family: Aseprite;
+    font-size: 32px;
+    border-collapse: collapse;
+    width: 100%;
+    color: #f2f2aa;
+    table-layout: fixed;
+
+}
+
+thead {
+    background-color: #f2f2aa;
+    color: #222034;
+    text-align: left;
+}
+
+tbody {
+    text-align: left;
+}
+
+tr:hover {
+    color: #f2f2aa;
+    background: #d77bba;
+}
+
+
+
+
+/* Aqui finaliza style de la consola*/
