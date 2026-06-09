@@ -198,7 +198,7 @@ const background = new Image();
 background.src = maps[currentMap].background;
 
 const playerSprite = new Image();
-playerSprite.src = "Spritesheet.png";
+playerSprite.src = "spritesheet.png";
 
 let bgX = -(bgWidth / 2 - canvasWidth / 2);
 let bgY = -(bgHeight / 2 - canvasHeight / 2);
