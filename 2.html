@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Mi Juego</title>
+  <style>
+    body {
+      margin: 0;
+      background-color: #FFFFFF;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      overflow: hidden;
+    }
+    canvas {
+      border: 1px solid #333333;
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+      background-color: #999999;
+    }
+    @font-face {
+      font-family: 'AsepriteFont';
+      src: url("https://dl.dropbox.com/s/aqay5uygr9atxvv/AsepriteFont.ttf");}
+    }
+  </style>
+</head>
+<body>
+
+  <canvas id="gameCanvas" width="960" height="800"></canvas>
+
+  <div id="dialogBox" style="
+    position: absolute;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 896px;
+    height: 160px;
+    background-image: url('https://64.media.tumblr.com/c4c6919ec3027333f04301f83ed5a228/d62df32c752f580f-3d/s1280x1920/ec8932c7a305866aa5623ce7b16cf11ddd3b3b41.png');
+    background-size: cover;
+    background-repeat: no-repeat;
+    font-family: AsepriteFont, monospace;
+    font-size: 32px;
+    color: white;
+    white-space: pre-line;
+    display: none;
+    padding: 16px 32px 16px 32px;
+    line-height: 32px;
+    box-sizing: border-box;
+    image-rendering: pixelated;
+    overflow: hidden;
+    text-shadow: none;
+  "></div>
+
+
+  <script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+    ctx.imageSmoothingEnabled = false;
+
+    const canvasWidth = canvas.width;
+    const canvasHeight = canvas.height;
+    const bgWidth = 1920;
+    const bgHeight = 1600;
+
+    const playerWidth = 64;
+    const playerHeight = 160;
+    const speed = 2;
+
+    const keys = {};
+    const background = new Image();
+    background.src = "https://64.media.tumblr.com/8c94245bdc3558a5bab10ee1086cec99/079166b06d860481-9b/s1280x1920/5dad190e802b43dda6e3a0e3d70c7717596b4348.png";
+
+    const playerSprite = new Image();
+    playerSprite.src = "https://64.media.tumblr.com/05a57af60fd0f309df3def7d90b26394/b8074c8351a7e9bd-24/s1280x1920/8feac1406e93b417868b3686e35f96f85765e1c1.png";
+
+    const interactionZones = [
+      { x: 400, y: 300, width: 64, height: 160, text: "MOM: A lot of strange things have been happening these past few days. I've heard rumors that animals have been getting sick. Take good care of your pet!.\n\n\nDULCE: Sure, it´s my best friend." },
+      { x: 416, y: 1056, width: 128, height: 32, text: "This door is sealed by a mystery force." }
+    ];
+
+    let bgX = -(bgWidth / 2 - canvasWidth / 2);
+    let bgY = -(bgHeight / 2 - canvasHeight / 2);
+
+    let centerX = (canvasWidth - playerWidth) / 2;
+    let centerY = (canvasHeight - playerHeight) / 2;
+    let playerX = centerX;
+    let playerY = centerY;
+
+    let directionIndex = 4;
+    let frame = 0;
+    let frameTimer = 0;
+    const frameSpeed = 6;
+    const maxWalkFrame = 7;
+    const maxIdleFrame = 3;
+
+    // TECLAS
+    window.addEventListener("keydown", (e) => {
+      const key = e.key.toLowerCase();
+      keys[key] = true;
+
+      if (key === "l") {
+        const playerRect = {
+          x: playerX - bgX,
+          y: playerY - bgY,
+          width: playerWidth,
+          height: playerHeight
+        };
+
+        const zone = interactionZones.find(zone => {
+          const touchingHorizontally =
+            playerRect.y + playerRect.height > zone.y &&
+            playerRect.y < zone.y + zone.height &&
+            (Math.abs(playerRect.x + playerRect.width - zone.x) <= 0 ||
+              Math.abs(playerRect.x - (zone.x + zone.width)) <= 0);
+
+          const touchingVertically =
+            playerRect.x + playerRect.width > zone.x &&
+            playerRect.x < zone.x + zone.width &&
+            (Math.abs(playerRect.y + playerRect.height - zone.y) <= 0 ||
+              Math.abs(playerRect.y - (zone.y + zone.height)) <= 0);
+
+          return touchingHorizontally || touchingVertically;
+        });
+
+        if (zone) {
+          DialogSystem.toggle(zone.text || "Sin texto", ctx);
+        }
+      }
+    });
+    window.addEventListener("keyup", (e) => keys[e.key.toLowerCase()] = false);
+
+    function getDirection() {
+      const up = keys["arrowup"] || keys["w"];
+      const down = keys["arrowdown"] || keys["s"];
+      const left = keys["arrowleft"] || keys["a"];
+      const right = keys["arrowright"] || keys["d"];
+
+      if (up && right) return 1;
+      if (right && down) return 3;
+      if (down && left) return 5;
+      if (left && up) return 7;
+      if (up) return 0;
+      if (right) return 2;
+      if (down) return 4;
+      if (left) return 6;
+      return -1;
+    }
+
+    function update() {
+      if (DialogSystem.isActive()) return;
+
+      let moved = false;
+      const dir = getDirection();
+      if (dir !== -1) directionIndex = dir;
+
+      const futureRect = {
+        x: playerX - bgX,
+        y: playerY - bgY,
+        width: playerWidth,
+        height: playerHeight
+      };
+
+      if (dir !== -1) {
+        if ([0, 1, 7].includes(dir)) futureRect.y -= speed;
+        if ([3, 4, 5].includes(dir)) futureRect.y += speed;
+        if ([1, 2, 3].includes(dir)) futureRect.x += speed;
+        if ([5, 6, 7].includes(dir)) futureRect.x -= speed;
+
+        if (!CollisionSystem.check(futureRect)) {
+          if ([0, 1, 7].includes(dir)) {
+            if (bgY < 0 && playerY === centerY) bgY += speed;
+            else if (playerY > 0) playerY -= speed;
+          }
+          if ([3, 4, 5].includes(dir)) {
+            if (bgY > canvasHeight - bgHeight && playerY === centerY) bgY -= speed;
+            else if (playerY + playerHeight < canvasHeight) playerY += speed;
+          }
+          if ([1, 2, 3].includes(dir)) {
+            if (bgX > canvasWidth - bgWidth && playerX === centerX) bgX -= speed;
+            else if (playerX + playerWidth < canvasWidth) playerX += speed;
+          }
+          if ([5, 6, 7].includes(dir)) {
+            if (bgX < 0 && playerX === centerX) bgX += speed;
+            else if (playerX > 0) playerX -= speed;
+          }
+          moved = true;
+        }
+      }
+
+      bgX = Math.min(0, Math.max(canvasWidth - bgWidth, bgX));
+      bgY = Math.min(0, Math.max(canvasHeight - bgHeight, bgY));
+      playerX = Math.max(0, Math.min(canvasWidth - playerWidth, playerX));
+      playerY = Math.max(0, Math.min(canvasHeight - playerHeight, playerY));
+
+      if (frameTimer++ >= frameSpeed) {
+        frameTimer = 0;
+        frame = moved ? (frame + 1) % (maxWalkFrame + 1)
+          : (frame + 1) % (maxIdleFrame + 1) + 8;
+      }
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+      ctx.drawImage(background, bgX, bgY, bgWidth, bgHeight);
+
+      const sx = (frame % 12) * playerWidth;
+      const sy = directionIndex * playerHeight;
+      ctx.drawImage(playerSprite, sx, sy, playerWidth, playerHeight, playerX, playerY, playerWidth, playerHeight);
+
+      CollisionSystem.debugDraw(ctx, bgX, bgY);
+
+      ctx.fillStyle = "rgba(0, 255, 0, 0.3)";
+      interactionZones.forEach(zone => {
+        ctx.fillRect(zone.x + bgX, zone.y + bgY, zone.width, zone.height);
+      });
+
+      DialogSystem.draw(ctx, canvasWidth, canvasHeight);
+    }
+
+    function gameLoop() {
+      update();
+      draw();
+      requestAnimationFrame(gameLoop);
+    }
+
+    background.onload = () => {
+      playerSprite.onload = () => {
+        CollisionSystem.add(32, 640, 384, 32);
+        CollisionSystem.add(544, 640, 256, 32);
+        CollisionSystem.add(32, 1056, 1088, 32);
+        CollisionSystem.add(1120, 640, 32, 416);
+        CollisionSystem.add(256, 160, 32, 288);
+        CollisionSystem.add(672, 160, 32, 288);
+        CollisionSystem.add(416, 96, 128, 32);
+        CollisionSystem.add(384, 512, 32, 128);
+        CollisionSystem.add(544, 512, 32, 128);
+
+        interactionZones.forEach(zone => {
+          CollisionSystem.add(zone.x, zone.y, zone.width, zone.height);
+        });
+
+        gameLoop();
+      };
+    };
+
+    const CollisionSystem = (() => {
+      const collisionRects = [];
+      return {
+        add: function (x, y, width, height) {
+          collisionRects.push({ x, y, width, height });
+        },
+        check: function (rect) {
+          return collisionRects.some(zone =>
+            rect.x < zone.x + zone.width &&
+            rect.x + rect.width > zone.x &&
+            rect.y < zone.y + zone.height &&
+            rect.y + rect.height > zone.y
+          );
+        },
+        debugDraw: function (ctx, offsetX, offsetY) {
+          ctx.save();
+          ctx.fillStyle = 'rgba(0, 0, 255, 0.2)';
+          collisionRects.forEach(zone => {
+            ctx.fillRect(zone.x + offsetX, zone.y + offsetY, zone.width, zone.height);
+          });
+          ctx.restore();
+        },
+        clear: function () {
+          collisionRects.length = 0;
+        }
+      };
+    })();
+
+    const DialogSystem = (function () {
+      let active = false;
+      let fullText = "";
+      let pages = [];
+      let currentPage = 0;
+      let boxElement = null;
+
+      const boxWidth = 896;
+      const boxHeight = 160;
+      const padding = 32;
+      const lineHeight = 32;
+      const fontSize = 32;
+      const maxTextWidth = boxWidth - padding * 2;
+      const maxLinesPerPage = 4;
+
+      function paginateText(ctx, text) {
+        const allLines = [];
+        const rawLines = text.split("\n");
+        ctx.font = `${fontSize}px AsepriteFont`;
+        rawLines.forEach(rawLine => {
+          const words = rawLine.split(" ");
+          let currentLine = "";
+          for (let i = 0; i < words.length; i++) {
+            const word = words[i];
+            const testLine = currentLine + (currentLine ? " " : "") + word;
+            const testWidth = ctx.measureText(testLine).width;
+            if (testWidth > maxTextWidth && currentLine !== "") {
+              allLines.push(currentLine);
+              currentLine = word;
+            } else {
+              currentLine = testLine;
+            }
+          }
+          allLines.push(currentLine);
+        });
+        const paginated = [];
+        for (let i = 0; i < allLines.length; i += maxLinesPerPage) {
+          paginated.push(allLines.slice(i, i + maxLinesPerPage));
+        }
+        return paginated;
+      }
+
+      function toggle(newText, ctx) {
+        if (!boxElement) {
+          boxElement = document.getElementById("dialogBox");
+          if (!boxElement) {
+            console.error("No se encontró el elemento con id 'dialogBox'");
+            return;
+          }
+        }
+        if (active && fullText === newText) {
+          if (currentPage < pages.length - 1) {
+            currentPage++;
+          } else {
+            active = false;
+            currentPage = 0;
+            pages = [];
+            fullText = "";
+            boxElement.style.display = "none";
+            boxElement.innerText = "";
+          }
+        } else {
+          active = true;
+          fullText = newText;
+          currentPage = 0;
+          pages = paginateText(ctx, newText);
+          boxElement.style.display = "block";
+        }
+        updateBoxText();
+      }
+
+      function updateBoxText() {
+        if (!boxElement || !pages.length) return;
+        boxElement.innerText = pages[currentPage].join("\n");
+      }
+
+      function isActive() {
+        return active;
+      }
+
+      function draw(ctx) {}
+
+      return {
+        toggle,
+        draw,
+        isActive
+      };
+    })();
+  </script>
+
+</body>
+</html>

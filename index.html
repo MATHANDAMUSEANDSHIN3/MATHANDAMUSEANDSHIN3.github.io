@@ -1,239 +1,46 @@
-<!DOCTYPE html>
-<meta name="copyright" content="Guillermo Daniel Arroyo Hernández @mathandamuseandshin3" />
-<meta name="author" content="Guillermo Daniel Arroyo Hernández, @mathandamuseandshin3" />
-<html lang="en">
+  <!DOCTYPE html>
+<html lang="es">
 
 <head>
   <meta charset="UTF-8">
-  <title> Alabao</title>
-  <link rel="shortcut icon" href="{Favicon}">
-  <link rel="stylesheet" href="style.css">
+  <title>Juego Canvas</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
+  <div id="game-container">
+  <canvas id="gameCanvas" width="960" height="800"></canvas>
 
+  <div id="terminalPanel">
+  <div id="terminalHeader">Item</div>
 
-  <div id="div_background">
-    <canvas id="canvas" width="960" height="800"></canvas>
+  <div id="itemList"></div>
 
-    <!--Aqui empieza Body de la consola-->
+  <div id="itemDetail" style="display: none;">
+    <textarea id="codeEditor"></textarea>
 
-
-    <img id="myImage" onclick="changeImage()"
-      src="https://64.media.tumblr.com/811947af7192b9394e60172ca4671b4c/5b6d7c03c8f7709a-c6/s1280x1920/6f17bb2ef962a786db09053d5ccd90d9403072a0.png"
-      style="position:fixed; right:32px; bottom:32px;">
-
-    <!--  <h8 id="output"></h8>-->
-
-    <form id="form_clock">
-      <div id="div_clock">
-        <button id="clock" disabled></button>
-      </div>
-    </form>
-
-
-    <form id="form_bag">
-      <button type="button" onclick="openBag()" aria-label="Abrir bolsa de objetos">
-        <div id="div_bag">
-          <span>BAG</span>
-
-        </div>
-      </button>
-
-
-    </form>
-
-
-
-    <form id="form">
-      <div id="div_form">
-        <h8 id="prompt"></h8>
-        <h8 id="caret" , class="blink"></h8>
-
-
-        <h8 id="error"></h8>
-        <h8 id="chapter1" spellcheck="false"></h8>
-        <input id="intro" maxlength="64">
-        <input id="user" maxlength="64">
-        <input id="password" maxlength="64" type="text" />
-        <input id="password2" maxlength="64" type="text">
-        <input id="command_line" maxlength="64">
-        <input id="command_line2" maxlength="64">
-      </div>
-    </form>
-
-    <form id="form_open_bag">
-
-      <div id="div_open_bag_header">
-        <table>
-          <thead>
-            <tr>
-              <th>Item</th>
-              <th>Quantity</th>
-              <th>Size</th>
-            </tr>
-          </thead>
-
-        </table>
-      </div>
-
-
-      <div id="div_open_bag">
-        <table>
-          <tbody>
-            <tr>
-              <td>Manual Programming 01</td>
-              <td>01</td>
-              <td>7.2kB</td>
-            </tr>
-            <tr>
-              <td>Manual Programming 02</td>
-              <td>01</td>
-              <td>6.4kB</td>
-            </tr>
-            <tr>
-              <td>Manual Programming 03</td>
-              <td>01</td>
-              <td>7.4kB</td>
-            </tr>
-            <tr>
-              <td>Manual Programming 04</td>
-              <td>01</td>
-              <td>7.4kB</td>
-            </tr>
-            <tr>
-              <td>Manual Programming 05</td>
-              <td>01</td>
-              <td>7.4kB</td>
-            </tr>
-            <tr>
-              <td>Manual Programming 06</td>
-              <td>01</td>
-              <td>7.4kB</td>
-            </tr>
-            <tr>
-              <td>Manual Programming 07</td>
-              <td>01</td>
-              <td>7.4kB</td>
-            </tr>
-            <tr>
-              <td>Manual Programming 08</td>
-              <td>01</td>
-              <td>7.4kB</td>
-            </tr>
-            <tr>
-              <td>Manual Programming 09</td>
-              <td>01</td>
-              <td>7.4kB</td>
-            </tr>
-            <tr>
-              <td>Manual Programming 10</td>
-              <td>01</td>
-              <td>7.4kB</td>
-            </tr>
-            <tr>
-              <td>Manual Programming 11</td>
-              <td>01</td>
-              <td>7.2kB</td>
-            </tr>
-            <tr>
-              <td>Manual Programming 12</td>
-              <td>01</td>
-              <td>6.4kB</td>
-            </tr>
-            <tr>
-              <td>Manual Programming 13</td>
-              <td>01</td>
-              <td>7.4kB</td>
-            </tr>
-            <tr>
-              <td>Manual Programming 14</td>
-              <td>01</td>
-              <td>7.4kB</td>
-            </tr>
-            <tr>
-              <td>Manual Programming 15</td>
-              <td>01</td>
-              <td>7.4kB</td>
-            </tr>
-            <tr>
-              <td>Manual Programming 16</td>
-              <td>01</td>
-              <td>7.4kB</td>
-            </tr>
-            <tr>
-              <td>Manual Programming 17</td>
-              <td>01</td>
-              <td>7.4kB</td>
-            </tr>
-            <tr>
-              <td>Manual Programming 18</td>
-              <td>01</td>
-              <td>7.4kB</td>
-            </tr>
-            <tr>
-              <td>Manual Programming 19</td>
-              <td>01</td>
-              <td>7.4kB</td>
-            </tr>
-            <tr>
-              <td>Manual Programming 20</td>
-              <td>01</td>
-              <td>7.4kB</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <!--<div id="div_use_button"><h7>Use</h7></div>-->
-
-
-      <button type="button">
-        <div id="div_use_button">
-          <span>Use</span>
-        </div>
-      </button>
-
-      <button type="button">
-        <div id="div_code_button">
-          <span>Code</span>
-        </div>
-      </button>
-
-
-
-
-
-
-
-
-
-
-    </form>
-
-
-    <button id="myBtn" onclick="myFunction()">1</button>
-    <button id="myBtn2" onclick="myFunction2()">2</button>
-    <button id="myBtn3" onclick="myFunction3()">3</button>
-    <button id="myBtn4" onclick="myFunction4()">4</button>
-    <button id="myBtn5" onclick="myFunction5()">5</button>
-    <button id="myBtn6" onclick="myFunction6()">6</button>
-    <button id="myBtn7" onclick="myFunction7()">7</button>
-
-
-
-
+    <div id="terminalButtons">
+      <button id="compileButton">COMPILE</button>
+      <button id="backButton">BACK</button>
+    </div>
+  </div>
+</div>
+  
+      <button id="bag_button">
+  <span id="bag_text">BAG</span> </button>
   </div>
 
+  
+  <script src="collision.js"></script>
+  <script src="dialogSystem.js"></script>
+  <script src="terminal.js"></script>
 
-  <!-- Aqui termina Body de la consola-->
-
-
-
-
+  <script src="itemDatabase.js"></script>
+<script src="inventory.js"></script>
 
   <script src="script.js"></script>
-
+   
 </body>
+
 
 </html>

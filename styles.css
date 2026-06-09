@@ -1,0 +1,221 @@
+:root {
+  --yellow: #fff599;
+  --pink: #ff66c2;
+  --dark: #1e1e1e;
+  --border: #3c3c3c;
+
+  --font-pixel: 'AsepriteFont', monospace;
+}
+
+* {
+  box-sizing: border-box;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+body {
+  margin: 0;
+  height: 100vh;
+  overflow: hidden;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background-color: #ffffff;
+  font-family: var(--font-pixel);
+
+  -webkit-font-smoothing: none;
+  -moz-osx-font-smoothing: unset;
+}
+
+canvas {
+  display: block;
+  border: 1px solid var(--border);
+}
+
+/* GAME CONTAINER */
+
+#game-container {
+  position: relative;
+  display: inline-block;
+}
+
+/* BAG BUTTON */
+
+#bag_button {
+  position: absolute;
+  top: 32px;
+  left: 832px;
+
+  width: 96px;
+  height: 64px;
+
+  background: transparent url("Button.png") center / 100% 100% no-repeat;
+
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+#bag_button:focus {
+  outline: none;
+}
+
+#bag_text {
+  display: block;
+
+  color: #ffe600;
+  font-family: var(--font-pixel);
+  font-size: 32px;
+  font-weight: normal;
+  line-height: 1;
+}
+
+/* TERMINAL */
+
+#terminalPanel {
+  position: absolute;
+  z-index: 20;
+
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+
+  display: none;
+
+  width: 704px;
+  height: 480px;
+  padding: 32px;
+
+  background: url("backgroundTerminal.png") center / 704px 480px no-repeat;
+
+  font-family: var(--font-pixel);
+  color: var(--yellow);
+}
+
+#terminalHeader {
+  height: 32px;
+  line-height: 32px;
+
+  margin-bottom: 0;
+
+  background-color: var(--yellow);
+  color: var(--dark);
+
+  font-size: 32px;
+}
+
+#itemList {
+  height: 384px;
+
+  overflow-y: auto;
+  scrollbar-width: none;
+
+  font-size: 32px;
+  line-height: 32px;
+}
+
+#itemList::-webkit-scrollbar,
+#codeEditor::-webkit-scrollbar {
+  display: none;
+}
+
+.itemRow {
+  height: 32px;
+  line-height: 32px;
+
+  color: var(--yellow);
+  cursor: pointer;
+}
+
+.itemRow.selected,
+.itemRow:hover {
+  background-color: var(--pink);
+  color: var(--yellow);
+}
+
+/* ITEM DETAIL */
+
+#itemDetail {
+  font-size: 32px;
+  line-height: 32px;
+}
+
+#codeEditor {
+  width: 100%;
+  height: 352px;
+
+  resize: none;
+  overflow-y: auto;
+  scrollbar-width: none;
+
+  border: none;
+  outline: none;
+
+  background: transparent;
+  color: var(--yellow);
+
+  font-family: var(--font-pixel);
+  font-size: 32px;
+  line-height: 32px;
+
+  caret-color: var(--pink);
+}
+
+#terminalButtons {
+  display: flex;
+  gap: 16px;
+
+  margin-top: 0;
+
+  height: 32px;
+
+  position: absolute;
+  left: 32px;
+  right: 32px;
+  bottom: 32px;
+
+}
+
+#terminalButtons button {
+
+  height: 32px;
+  padding: 0 16px;
+
+  border: none;
+  cursor: pointer;
+
+  font-family: var(--font-pixel);
+  font-size: 32px;
+
+  background-color: #fff599;
+  color: #1e1e1e;
+
+}  
+
+#terminalButtons button:hover {
+
+  background-color: #ff66c2;
+  color: #fff599;
+
+}
+
+/* SELECTION */
+
+#terminalPanel ::selection {
+  background: var(--pink);
+  color: var(--yellow);
+}
+
+#terminalPanel ::-moz-selection {
+  background: var(--pink);
+  color: var(--yellow);
+}
+
+/* FONT */
+
+@font-face {
+  font-family: 'AsepriteFont';
+  src: url('AsepriteFont.ttf');
+}
