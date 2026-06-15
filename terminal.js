@@ -21,9 +21,12 @@ const TerminalSystem = (function () {
         return active;
     }
 
-   function close() {
+function close() {
 
     active = false;
+
+    GameState.pendingDoor = null;
+    GameState.terminalMode = "normal";
 
     document
         .getElementById(
@@ -99,6 +102,7 @@ const TerminalSystem = (function () {
     }
 
     function backToList() {
+
         const list = document.getElementById("itemList");
         const detail = document.getElementById("itemDetail");
         const header =
@@ -155,6 +159,80 @@ lines.forEach(line => {
 close();
     }
 
+function useCurrentItem() {
+
+    const editor =
+        document.getElementById("codeEditor");
+
+    const items =
+        InventorySystem.getItems();
+
+    const index =
+        Number(editor.dataset.itemIndex);
+
+    const item =
+        items[index];
+
+    if (!item) return;
+
+    if (!GameState.pendingDoor) {
+
+        console.log(
+            "ITEM USED:",
+            item.name,
+            item.pin
+        );
+
+        return;
+    }
+
+    const door =
+        GameState.pendingDoor;
+
+    if (item.pin === door.requiredPin) {
+
+        console.log("ACCESS GRANTED");
+
+        const targetMap =
+            door.targetMap;
+
+        const spawnX =
+            door.spawnX;
+
+        const spawnY =
+            door.spawnY;
+
+        GameState.pendingDoor = null;
+        GameState.terminalMode = "normal";
+
+        close();
+
+        changeMap(
+            targetMap,
+            spawnX,
+            spawnY
+        );
+
+    } else {
+
+    console.log("ACCESS DENIED");
+
+    GameState.pendingDoor = null;
+    GameState.terminalMode = "normal";
+    GameState.interactionLock = true;
+
+    close();
+
+    DialogSystem.toggle(
+        "Access denied",
+        ctx
+    );
+
+    return;
+}
+
+}
+
     window.addEventListener("keydown", (e) => {
         if (!active) return;
 
@@ -193,9 +271,15 @@ close();
         }
 
         if (key === "l") {
-            openDetail(items[selectedIndex]);
-            return;
-        }
+
+    e.preventDefault();
+
+    openDetail(
+        items[selectedIndex]
+    );
+
+    return;
+}
     });
 
     document
@@ -205,6 +289,11 @@ close();
     document
         .getElementById("compileButton")
         .addEventListener("click", compileCurrentItem);
+
+    document
+    .getElementById("useButton")
+    .addEventListener("click", useCurrentItem);
+        
 
     function draw() {
         // La BAG ahora es HTML, no canvas.

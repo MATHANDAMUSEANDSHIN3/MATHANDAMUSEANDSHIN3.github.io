@@ -36,156 +36,6 @@ let pinMode = false;
 let currentDoor = null;
 let enteredPin = "";
 
-const maps = {
-
-  dulce_house: {
-    background: "background2.png",
-    width: 1920,
-    height: 1600,
-    collisions: [
-
-      [32, 640, 384, 32],
-      [544, 640, 256, 32],
-      [32, 1056, 1088, 32],
-      [1120, 640, 32, 416],
-      [256, 160, 32, 288],
-      [672, 160, 32, 288],
-      [416, 96, 128, 32],
-      [384, 512, 32, 128],
-      [544, 512, 32, 128],
-      [800, 624, 16, 16],
-      [832, 608, 16, 16],
-      [864, 592, 16, 16],
-      [ 896, 576, 16, 16],
-      [ 928, 560, 16, 16],
-
-    ],
-    interactions: [
-
-      {
-        x: 400,
-        y: 300,
-        width: 64,
-        height: 160,
-        text:
-          "MOM: A lot of strange things have been happening these past few days. I've heard rumors that animals have been getting sick. Take good care of your pet!.\n\n\nDULCE: Sure, it´s my best friend."
-      },
-
-      {
-        x: 416,
-        y: 1056,
-        width: 128,
-        height: 32,
-        text: "This door is sealed by a mystery force."
-      }
-
-    ],
-items: [
-
-    {
-        itemId: "key_001",
-        x: 900,
-        y: 700,
-        width: 32,
-        height: 32
-    },
-
-    {
-        itemId: "key_002",
-        x: 200,
-        y: 300,
-        width: 32,
-        height: 32
-    }
-
-],
-
-    doors: [
-
-  {
-    x: 864,
-    y: 608,
-    width: 64,
-    height: 32,
-
-    targetMap: "dulce_kitchen",
-
-   spawnX: 448,
-   spawnY: 448,
-
-   requiredPin: "1234"
-
-
-  },
-  {
-    x: 576,
-    y: 144,
-    width: 64,
-    height: 32,
-
-    targetMap: "dulce_room",
-
-   spawnX: 448,
-   spawnY: 448,
-
-  requiredPin: "2345"
-  }
-
-]
-
-  },
-
-dulce_kitchen: {
-    background: "background3.png",
-    width: 960,
-    height: 800,
-    collisions: [
-    ],
-    interactions: [],
-    doors: [
-
-  {
-    x: 448,
-    y: 608,
-    width: 64,
-    height: 32,
-
-    targetMap: "dulce_house",
-
-   spawnX: 864,
-   spawnY: 608
-  }
-
-],items: [],
-
-  },
-
-  dulce_room: {
-    background: "background3.png",
-    width: 960,
-    height: 800,
-    collisions: [
-    ],
-    interactions: [],
-    doors: [
-
-  {
-    x: 448,
-    y: 608,
-    width: 64,
-    height: 32,
-
-    targetMap: "dulce_house",
-
-   spawnX: 576,
-   spawnY: 148
-
-  }
-
-],items: [],
-
-  }
-};
 
 
 let currentMap = "dulce_house";
@@ -199,6 +49,10 @@ background.src = maps[currentMap].background;
 
 const playerSprite = new Image();
 playerSprite.src = "spritesheet.png";
+
+const itemSprites = {};
+
+const doorSprites = {};
 
 let bgX = -(bgWidth / 2 - canvasWidth / 2);
 let bgY = -(bgHeight / 2 - canvasHeight / 2);
@@ -248,6 +102,22 @@ window.addEventListener("keydown", (e) => {
 
     };
 
+    if (GameState.interactionLock) {
+
+    GameState.interactionLock = false;
+
+    if (DialogSystem.isActive()) {
+
+        DialogSystem.toggle(
+            "Access denied",
+            ctx
+        );
+
+    }
+
+    return;
+}
+
 
     if (currentItem) {
 
@@ -283,32 +153,27 @@ window.addEventListener("keydown", (e) => {
 
     );
 
-    if (door) {
+   if (door) {
 
-if (
-    door.requiredPin &&
-    !InventorySystem.hasPin(
-        door.requiredPin
-    )
-) {
+    if (door.requiredPin) {
 
-    DialogSystem.toggle(
-        "ACCESS DENIED",
-        ctx
+        GameState.pendingDoor = door;
+        GameState.terminalMode = "useItem";
+
+        TerminalSystem.toggle();
+
+        return;
+    }
+
+    changeMap(
+        door.targetMap,
+        door.spawnX,
+        door.spawnY
     );
 
     return;
-}
-      
-        changeMap(
-          door.targetMap,
-          door.spawnX,
-          door.spawnY
-        );
 
-        return;
-      
-    }
+}
 
     // NPCs / zonas interactuables
 
@@ -681,14 +546,69 @@ function draw() {
   const sx = (frame % 12) * playerWidth;
   const sy = directionIndex * playerHeight;
 
-  // BACKGROUND
+  // DRAW BACKGROUND
   ctx.drawImage(
     background,
     drawBgX,
     drawBgY
   );
 
-  // PLAYER
+//DRAW ITEMS
+(maps[currentMap].items || []).forEach(item => {
+
+    if (!item.sprite) return;
+
+    if (!itemSprites[item.sprite]) {
+
+        itemSprites[item.sprite] =
+            new Image();
+
+        itemSprites[item.sprite].src =
+            item.sprite;
+
+    }
+
+    ctx.drawImage(
+        itemSprites[item.sprite],
+
+        Math.round(item.x + bgX),
+        Math.round(item.y + bgY),
+
+        item.width,
+        item.height
+    );
+
+});
+  
+
+  //DRAW DOORS
+  (maps[currentMap].doors || []).forEach(door => {
+
+  if (!door.sprite) return;
+
+  if (!doorSprites[door.sprite]) {
+
+    doorSprites[door.sprite] =
+      new Image();
+
+    doorSprites[door.sprite].src =
+      door.sprite;
+
+  }
+
+ ctx.drawImage(
+  doorSprites[door.sprite],
+
+  Math.round(door.x + bgX + (door.spriteOffsetX || 0)),
+  Math.round(door.y + bgY + (door.spriteOffsetY || 0)),
+
+  door.spriteWidth || door.width,
+  door.spriteHeight || door.height
+);
+
+});
+
+// DRAW PLAYER
   ctx.drawImage(
     playerSprite,
     sx,
@@ -702,16 +622,20 @@ function draw() {
   );
 
   // DEBUG COLLISIONS
+if (GameState.debugMode) {
   CollisionSystem.debugDraw(
     ctx,
     drawBgX,
     drawBgY
   );
+}
 
-  // ZONAS
+  // DEBUG ITEMS
+if (GameState.debugMode) {
+
   ctx.fillStyle = "rgba(0,255,0,0.3)";
 
- (maps[currentMap].items || []).forEach(zone => {
+  (maps[currentMap].interactions || []).forEach(zone => {
 
     ctx.fillRect(
       Math.round(zone.x + bgX),
@@ -722,33 +646,60 @@ function draw() {
 
   });
 
- // DOORS
-ctx.fillStyle = "rgba(255,0,0,0.3)";
+}
 
-maps[currentMap].doors.forEach(door => {
+ // DEBUG DOORS
+if (GameState.debugMode) {
 
-    ctx.fillRect(
-        Math.round(door.x + bgX),
-        Math.round(door.y + bgY),
-        door.width,
-        door.height
-    );
+  ctx.fillStyle = "rgba(255,0,0,0.3)";
 
-});
-
-// ITEMS
-ctx.fillStyle = "yellow";
-
-maps[currentMap].items.forEach(item => {
+  (maps[currentMap].doors || []).forEach(door => {
 
     ctx.fillRect(
-        Math.round(item.x + bgX),
-        Math.round(item.y + bgY),
-        item.width,
-        item.height
+      Math.round(door.x + bgX),
+      Math.round(door.y + bgY),
+      door.width,
+      door.height
     );
 
-});
+  });
+
+}
+
+// DEBUG ITEMS
+if (GameState.debugMode) {
+
+  ctx.fillStyle = "rgba(0,255,255,0.3)";
+
+  (maps[currentMap].items || []).forEach(item => {
+
+    ctx.fillRect(
+      Math.round(item.x + bgX),
+      Math.round(item.y + bgY),
+      item.width,
+      item.height
+    );
+
+  });
+
+
+  
+
+}
+
+//DEBUG CHARACTER
+if (GameState.debugMode) {
+
+    ctx.fillStyle = "rgba(255,255,0,0.3)";
+
+    ctx.fillRect(
+        drawPlayerX,
+        drawPlayerY,
+        playerWidth,
+        playerHeight
+    );
+
+}
 
   // DIALOG
   DialogSystem.draw(

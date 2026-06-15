@@ -1,0 +1,167 @@
+const maps = {
+
+  dulce_house: {
+    background: "background2.png",
+    width: 1920,
+    height: 1600,
+    collisions: [
+
+      [32, 640, 384, 32],
+      [544, 640, 256, 32],
+      [32, 1056, 1088, 32],
+      [1120, 640, 32, 416],
+      [256, 160, 32, 288],
+      [672, 160, 32, 288],
+      [416, 96, 128, 32],
+      [384, 512, 32, 128],
+      [544, 512, 32, 128],
+      [800, 640, 16, 16],
+      [832, 624, 16, 16],
+      [864, 592, 16, 16],
+      [ 896, 576, 16, 16],
+      [ 928, 576, 16, 16],
+
+         [976, 576, 16, 16],
+      [1008, 592, 16, 16],
+      [1040, 608, 16, 16],
+      [ 1072, 624, 16, 16],
+      [ 1104, 640, 16, 16],
+
+    ],
+    interactions: [
+
+      {
+        x: 400,
+        y: 300,
+        width: 64,
+        height: 160,
+        text:
+          "MOM: A lot of strange things have been happening these past few days. I've heard rumors that animals have been getting sick. Take good care of your pet!.\n\n\nDULCE: Sure, it´s my best friend."
+      },
+
+      {
+        x: 416,
+        y: 1056,
+        width: 128,
+        height: 32,
+        text: "This door is sealed by a mystery force."
+      }
+
+    ],
+items: [
+
+    {
+        itemId: "key_001",
+        x: 768,
+        y: 800,
+        width: 32,
+        height: 32,
+        sprite: "generic_disk.png"
+    }
+
+],
+
+    doors: [
+
+  {
+    x: 864,
+    y: 608,
+    width: 64,
+    height: 32,
+
+    targetMap: "dulce_kitchen",
+
+   spawnX: 448,
+   spawnY: 448,
+
+   requiredPin: "1234"
+
+
+  },
+  {
+    x: 576,
+    y: 144,
+    width: 64,
+    height: 32,
+
+     spriteWidth: 64,
+  spriteHeight: 192,
+
+  spriteOffsetX: 0,
+  spriteOffsetY: -32,
+
+    targetMap: "dulce_room",
+
+   spawnX: 448,
+   spawnY: 448,
+
+  requiredPin: "2345",
+  sprite: "sealed_door.png",
+  }
+
+]
+
+  },
+
+dulce_kitchen: {
+    background: "background3.png",
+    width: 960,
+    height: 800,
+    collisions: [
+    ],
+    interactions: [],
+    doors: [
+
+  {
+    x: 448,
+    y: 608,
+    width: 64,
+    height: 32,
+
+    targetMap: "dulce_house",
+
+   spawnX: 864,
+   spawnY: 608
+  }
+
+],items: [
+
+{
+        itemId: "key_002",
+        x: 448,
+        y: 288,
+        width: 32,
+        height: 32,
+        sprite: "generic_disk.png"
+    }
+
+],
+
+  },
+
+  dulce_room: {
+    background: "background3.png",
+    width: 960,
+    height: 800,
+    collisions: [
+    ],
+    interactions: [],
+    doors: [
+
+  {
+    x: 448,
+    y: 608,
+    width: 64,
+    height: 32,
+
+    targetMap: "dulce_house",
+
+   spawnX: 576,
+   spawnY: 148
+
+  }
+
+],items: [],
+
+  }
+};
