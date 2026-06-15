@@ -28,6 +28,8 @@ bagButton.addEventListener("click", () => {
 
     if (DialogSystem.isActive()) return;
 
+    if (TerminalSystem.isComputerMode()) return;
+
     TerminalSystem.toggle();
 
 });
@@ -235,12 +237,20 @@ window.addEventListener("keydown", (e) => {
 
     if (zone) {
 
-      DialogSystem.toggle(
-        zone.text || "Sin texto",
-        ctx
-      );
+  if (zone.type === "computer") {
 
-    }
+    TerminalSystem.openComputer(zone);
+
+    return;
+
+  }
+
+  DialogSystem.toggle(
+    zone.text || "Sin texto",
+    ctx
+  );
+
+}
   }
 
 
@@ -630,6 +640,7 @@ if (GameState.debugMode) {
   );
 }
 
+
   // DEBUG ITEMS
 if (GameState.debugMode) {
 
@@ -739,4 +750,6 @@ background.onload = () => {
     // Arrancamos el bucle del juego
     gameLoop();
   };
+
+
 };

@@ -213,6 +213,78 @@ canvas {
   color: var(--yellow);
 }
 
+#terminalWindow {
+    display: none;
+    position: absolute;
+
+    width: 700px;
+    height: 500px;
+
+    left: 50%;
+    top: 50%;
+
+    transform: translate(-50%, -50%);
+
+    background: black;
+    color: lime;
+
+    border: 2px solid lime;
+
+    padding: 16px;
+
+    font-family: monospace;
+
+    z-index: 20;
+}
+
+#terminalTitle {
+    font-size: 24px;
+    margin-bottom: 12px;
+}
+
+#terminalFileList {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+#terminalFileList button {
+    background: black;
+    color: lime;
+    border: 1px solid lime;
+    padding: 8px;
+    cursor: pointer;
+}
+
+#terminalEditor {
+    width: 100%;
+    height: 320px;
+
+    background: black;
+    color: lime;
+
+    border: 1px solid lime;
+
+    font-family: monospace;
+    font-size: 16px;
+
+    resize: none;
+}
+
+#terminalSave,
+#terminalClose {
+    margin-top: 12px;
+
+    background: black;
+    color: lime;
+
+    border: 1px solid lime;
+
+    padding: 8px 16px;
+
+    cursor: pointer;
+}
+
 /* FONT */
 
 @font-face {

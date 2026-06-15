@@ -3,6 +3,14 @@ const TerminalSystem = (function () {
     let active = false;
     let selectedIndex = 0;
 
+    let mode = "inventory";
+let currentComputer = null;
+let selectedFileIndex = 0;
+
+function isComputerMode() {
+    return mode === "computer";
+}
+
     function toggle() {
         active = !active;
 
@@ -25,17 +33,18 @@ function close() {
 
     active = false;
 
+    mode = "inventory";
+    currentComputer = null;
+    selectedFileIndex = 0;
+
     GameState.pendingDoor = null;
     GameState.terminalMode = "normal";
 
     document
-        .getElementById(
-            "terminalPanel"
-        )
+        .getElementById("terminalPanel")
         .style.display = "none";
 
     backToList();
-
 }
 
     function renderList() {
@@ -73,15 +82,31 @@ function close() {
     }
 
     function updateSelection() {
-        const rows = document.querySelectorAll(".itemRow");
 
-        rows.forEach((row, index) => {
+    const rows =
+        document.querySelectorAll(".itemRow");
+
+    rows.forEach((row, index) => {
+
+        if (mode === "computer") {
+
+            row.classList.toggle(
+                "selected",
+                index === selectedFileIndex
+            );
+
+        } else {
+
             row.classList.toggle(
                 "selected",
                 index === selectedIndex
             );
-        });
-    }
+
+        }
+
+    });
+
+}
 
     function openDetail(item) {
         const list = document.getElementById("itemList");
@@ -94,8 +119,16 @@ function close() {
         detail.style.display = "block";
         header.style.display = "none";
 
-        editor.value =
-    "PIN = " + (item.pin || "");
+       editor.value =
+    Object.keys(item)
+        .filter(key =>
+            key !== "id" &&
+            key !== "type"
+        )
+        .map(key =>
+            key.toUpperCase() + " = " + item[key]
+        )
+        .join("\n");
         editor.dataset.itemIndex = selectedIndex;
 
         editor.focus();
@@ -113,51 +146,126 @@ function close() {
         header.style.display = "block";
     
 
-        renderList();
+        if (mode === "computer") {
+    renderComputerFiles();
+} else {
+    renderList();
+}
     }
+
+if (mode === "computer") {
+
+    const index =
+        Number(editor.dataset.fileIndex);
+
+    const file =
+        currentComputer.files[index];
+
+    if (!file) return;
+
+    file.content =
+        editor.value;
+
+    console.log(
+        "FILE SAVED:",
+        file.name,
+        file.content
+    );
+
+    close();
+
+    return;
+}
 
     function compileCurrentItem() {
-        const editor = document.getElementById("codeEditor");
-        const items = InventorySystem.getItems();
 
-        const index = Number(editor.dataset.itemIndex);
-        const item = items[index];
+    const editor =
+        document.getElementById("codeEditor");
 
-        if (!item) return;
+    if (mode === "computer") {
 
-        const code =
-    editor.value;
+        const index =
+            Number(editor.dataset.fileIndex);
 
-const lines =
-    code.split("\n");
+        const file =
+            currentComputer.files[index];
 
-lines.forEach(line => {
+        if (!file) return;
 
-    const parts =
-        line.split("=");
-
-    if (parts.length < 2) return;
-
-    const key =
-        parts[0].trim().toLowerCase();
-
-    const value =
-        parts.slice(1).join("=").trim();
-
-    if (key === "pin") {
-        item.pin = value;
-    }
-
-});
+        file.content =
+            editor.value;
 
         console.log(
-    "COMPILED:",
-    item.name,
-    item.pin
-);
+            "FILE SAVED:",
+            file.name,
+            file.content
+        );
 
-close();
+        close();
+
+        return;
     }
+
+    const items =
+        InventorySystem.getItems();
+
+    const index =
+        Number(editor.dataset.itemIndex);
+
+    const item =
+        items[index];
+
+    if (!item) return;
+
+    const code =
+        editor.value;
+
+    const lines =
+        code.split("\n");
+
+    lines.forEach(line => {
+
+        const cleanLine =
+            line.trim();
+
+        if (cleanLine === "") return;
+
+        if (cleanLine.startsWith("//")) return;
+
+        const parts =
+            cleanLine.split("=");
+
+        if (parts.length < 2) return;
+
+        const key =
+            parts[0]
+                .trim()
+                .toLowerCase();
+
+        let value =
+            parts
+                .slice(1)
+                .join("=")
+                .trim();
+
+        if (
+            value.startsWith('"') &&
+            value.endsWith('"')
+        ) {
+            value =
+                value.slice(1, -1);
+        }
+
+        item[key] = value;
+
+        console.log("SET:", key, value);
+    });
+
+    console.log("ITEM AFTER COMPILE:", item);
+
+    close();
+
+}
 
 function useCurrentItem() {
 
@@ -242,44 +350,93 @@ function useCurrentItem() {
             return;
         }
 
-        const items = InventorySystem.getItems();
+        const entries =
+    mode === "computer"
+        ? currentComputer.files
+        : InventorySystem.getItems();
 
-        if (items.length === 0) return;
+if (entries.length === 0) return;
 
         const key = e.key.toLowerCase();
 
         if (key === "arrowdown" || key === "s") {
-            selectedIndex++;
 
-            if (selectedIndex >= items.length) {
-                selectedIndex = items.length - 1;
-            }
+    if (mode === "computer") {
 
-            updateSelection();
-            return;
+        selectedFileIndex++;
+
+        if (selectedFileIndex >= entries.length) {
+            selectedFileIndex = entries.length - 1;
         }
+
+    } else {
+
+        selectedIndex++;
+
+        if (selectedIndex >= entries.length) {
+            selectedIndex = entries.length - 1;
+        }
+
+    }
+
+    updateSelection();
+    return;
+}
 
         if (key === "arrowup" || key === "w") {
-            selectedIndex--;
 
-            if (selectedIndex < 0) {
-                selectedIndex = 0;
-            }
+    if (mode === "computer") {
 
-            updateSelection();
-            return;
+        selectedFileIndex--;
+
+        if (selectedFileIndex < 0) {
+            selectedFileIndex = 0;
         }
 
-        if (key === "l") {
+    } else {
+
+        selectedIndex--;
+
+        if (selectedIndex < 0) {
+            selectedIndex = 0;
+        }
+
+    }
+
+    updateSelection();
+    return;
+}
+
+      if (key === "l") {
 
     e.preventDefault();
 
+    if (mode === "computer") {
+
+        openComputerFile(
+            currentComputer.files[selectedFileIndex]
+        );
+
+        return;
+
+    }
+
     openDetail(
-        items[selectedIndex]
+        entries[selectedIndex]
     );
 
     return;
 }
+
+if (key === "e") {
+
+    e.preventDefault();
+
+    close();
+
+    return;
+}
+
     });
 
     document
@@ -299,11 +456,107 @@ function useCurrentItem() {
         // La BAG ahora es HTML, no canvas.
     }
 
+    function openComputer(computer) {
+
+    active = true;
+    mode = "computer";
+    currentComputer = computer;
+    selectedFileIndex = 0;
+
+    const panel =
+        document.getElementById("terminalPanel");
+
+    const header =
+        document.getElementById("terminalHeader");
+
+    panel.style.display = "block";
+
+    header.style.display = "block";
+    header.innerText = computer.name;
+
+    renderComputerFiles();
+
+}
+
+function renderComputerFiles() {
+
+    const list =
+        document.getElementById("itemList");
+
+    const detail =
+        document.getElementById("itemDetail");
+
+    list.innerHTML = "";
+    list.style.display = "block";
+    detail.style.display = "none";
+
+    currentComputer.files.forEach((file, index) => {
+
+        const row =
+            document.createElement("div");
+
+        row.className = "itemRow";
+
+        if (index === selectedFileIndex) {
+            row.classList.add("selected");
+        }
+
+        row.innerText = file.name;
+
+        row.addEventListener("mouseenter", () => {
+            selectedFileIndex = index;
+            updateSelection();
+        });
+
+        row.addEventListener("click", () => {
+            selectedFileIndex = index;
+            openComputerFile(file);
+        });
+
+        list.appendChild(row);
+
+    });
+
+}
+
+function openComputerFile(file) {
+
+    const list =
+        document.getElementById("itemList");
+
+    const detail =
+        document.getElementById("itemDetail");
+
+    const editor =
+        document.getElementById("codeEditor");
+
+    const header =
+        document.getElementById("terminalHeader");
+
+    list.style.display = "none";
+    detail.style.display = "block";
+    header.style.display = "none";
+
+    editor.value = file.content;
+
+    editor.scrollTop = 0;
+editor.selectionStart = 0;
+editor.selectionEnd = 0;
+    editor.dataset.fileIndex = selectedFileIndex;
+
+
+
+    editor.focus();
+
+}
+
     return {
-        toggle,
-        close,
-        isActive,
-        draw
-    };
+    toggle,
+    close,
+    isActive,
+    draw,
+    openComputer,
+     isComputerMode
+};
 
 })();

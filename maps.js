@@ -145,7 +145,45 @@ dulce_kitchen: {
     height: 800,
     collisions: [
     ],
-    interactions: [],
+    interactions: [
+
+{
+   x: 448,
+   y: 288,
+   width: 32,
+  height: 32,
+    type: "computer",
+    sprite: "generic_disk.png",
+    name: "Office Computer",
+    files: [
+        {
+            name: "Readme.txt",
+            content: `========================================
+There are a few things to think about in life.
+========================================
+
+-It's easy to lose track of oneself if one does not have routines such as sleeping regularly. Maybe not always but at least sometimes. Or just drink a lot of coffeeee....
+
+-Be curious! Poking your nose around in various things, and also perhaps where it shouldn't be, is not a bad thing necessarily. It's just that old people seem to forget the importance of these things.
+
+-You don't always have to sleep in your own bed. Sometimes you can find a derelict bed when you're out and about in the most peculiar places. Don't be afraid to take a nap.
+
+-Do whatever you want. ANY fool can make a rule, and any fool can break it. So, have fun!
+
+N`
+        },
+        {
+            name: "Notes.txt",
+            content: "The door code was changed yesterday."
+        },
+        {
+            name: "Log.txt",
+            content: "Last login: unknown user."
+        }
+    ]
+}
+
+    ],
     doors: [
 
   {
