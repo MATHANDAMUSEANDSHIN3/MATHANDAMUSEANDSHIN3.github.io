@@ -1,5 +1,11 @@
 const TerminalSystem = (function () {
 
+    let consoleInput = "";
+let consoleState = "command";
+let typedUsername = "";
+let currentUser = null;
+let consoleOutput = "";
+
     let active = false;
     let selectedIndex = 0;
 
@@ -37,12 +43,28 @@ function close() {
     currentComputer = null;
     selectedFileIndex = 0;
 
-    GameState.pendingDoor = null;
-    GameState.terminalMode = "normal";
+    // Preserve GameState.pendingDoor and GameState.terminalMode so closing the terminal
+    // with ESC doesn't cancel a pending door interaction unexpectedly.
+
+    // Reset header text so BAG shows "Item" again when closing a computer
+    const header = document.getElementById("terminalHeader");
+    if (header) header.innerText = "Item";
 
     document
         .getElementById("terminalPanel")
         .style.display = "none";
+
+    // Blur any focused interactive element so subsequent Enter presses
+    // don't activate a focused button (e.g., BAG) and interfere with
+    // the global Enter behavior for opening doors.
+    try {
+        const active = document.activeElement;
+        if (active && (active.tagName === 'BUTTON' || active.tagName === 'TEXTAREA' || active.tagName === 'INPUT')) {
+            active.blur();
+        }
+    } catch (e) {
+        // ignore
+    }
 
     backToList();
 }
@@ -146,8 +168,8 @@ function close() {
         header.style.display = "block";
     
 
-        if (mode === "computer") {
-    renderComputerFiles();
+       if (mode === "computer") {
+    renderComputerConsole();
 } else {
     renderList();
 }
@@ -175,6 +197,51 @@ if (mode === "computer") {
     close();
 
     return;
+}
+
+function openInventory() {
+
+    console.log("TerminalSystem.openInventory called (start)", {
+        pendingDoor: GameState.pendingDoor,
+        terminalMode: GameState.terminalMode,
+        active
+    });
+
+    active = true;
+    mode = "inventory";
+
+    const panel = document.getElementById("terminalPanel");
+
+    if (panel) {
+        panel.style.display = "block";
+        panel.style.visibility = "visible";
+        panel.style.opacity = "1";
+        // Ensure it's above other elements
+        panel.style.zIndex = "9999";
+    }
+
+    // Asegurar header por defecto
+    const header = document.getElementById("terminalHeader");
+    if (header) header.innerText = "Item";
+
+    renderList();
+
+    // If opening because of a pending door, prefer selecting a key-like item
+    const items = InventorySystem.getItems();
+    if (GameState.terminalMode === "useItem" && items.length > 0) {
+        let keyIdx = items.findIndex(it => it.type === "key" || it.pin);
+        if (keyIdx === -1) keyIdx = 0;
+        selectedIndex = keyIdx;
+        updateSelection();
+    }
+
+    console.log("TerminalSystem.openInventory called (end)", {
+        active,
+        panelDisplay: panel ? panel.style.display : null,
+        itemsCount: items.length,
+        selectedIndex
+    });
+
 }
 
     function compileCurrentItem() {
@@ -341,103 +408,202 @@ function useCurrentItem() {
 
 }
 
-    window.addEventListener("keydown", (e) => {
-        if (!active) return;
+   window.addEventListener("keydown", (e) => {
 
-        const editor = document.getElementById("codeEditor");
+    if (!active) return;
 
-        if (document.activeElement === editor) {
-            return;
-        }
+    const editor =
+        document.getElementById("codeEditor");
 
-        const entries =
-    mode === "computer"
-        ? currentComputer.files
-        : InventorySystem.getItems();
-
-if (entries.length === 0) return;
-
-        const key = e.key.toLowerCase();
-
-        if (key === "arrowdown" || key === "s") {
-
-    if (mode === "computer") {
-
-        selectedFileIndex++;
-
-        if (selectedFileIndex >= entries.length) {
-            selectedFileIndex = entries.length - 1;
-        }
-
-    } else {
-
-        selectedIndex++;
-
-        if (selectedIndex >= entries.length) {
-            selectedIndex = entries.length - 1;
-        }
-
-    }
-
-    updateSelection();
-    return;
-}
-
-        if (key === "arrowup" || key === "w") {
-
-    if (mode === "computer") {
-
-        selectedFileIndex--;
-
-        if (selectedFileIndex < 0) {
-            selectedFileIndex = 0;
-        }
-
-    } else {
-
-        selectedIndex--;
-
-        if (selectedIndex < 0) {
-            selectedIndex = 0;
-        }
-
-    }
-
-    updateSelection();
-    return;
-}
-
-      if (key === "l") {
-
-    e.preventDefault();
-
-    if (mode === "computer") {
-
-        openComputerFile(
-            currentComputer.files[selectedFileIndex]
-        );
-
+    if (document.activeElement === editor) {
         return;
-
     }
 
-    openDetail(
-        entries[selectedIndex]
-    );
+    const key =
+        e.key.toLowerCase();
 
-    return;
-}
+    // ESC SIEMPRE CIERRA
 
-if (key === "e") {
+if (key === "escape") {
 
     e.preventDefault();
+    e.stopImmediatePropagation();
+
+    keys["enter"] = false;
+    keys["escape"] = false;
 
     close();
 
     return;
 }
 
-    });
+    const entries =
+        mode === "computer"
+            ? currentComputer.files
+            : InventorySystem.getItems();
+
+    if (entries.length === 0) return;
+
+    // CONSOLA DE LOGIN
+
+    if (
+        mode === "computer" &&
+        consoleState !== "files"
+    ) {
+
+        e.preventDefault();
+
+        if (key === "backspace") {
+
+            consoleInput =
+                consoleInput.slice(0, -1);
+
+            renderComputerConsole();
+
+            return;
+
+        }
+
+        if (key === "enter") {
+
+
+            const command =
+                consoleInput
+                    .trim()
+                    .toUpperCase();
+
+            executeComputerCommand(
+                command
+            );
+
+            return;
+
+        }
+
+        if (e.key.length === 1) {
+
+            consoleInput +=
+                e.key.toUpperCase();
+
+            renderComputerConsole();
+
+            return;
+
+        }
+
+        return;
+
+    }
+
+    // ABAJO
+
+    if (
+        key === "arrowdown" ||
+        key === "s"
+    ) {
+
+        if (mode === "computer") {
+
+            selectedFileIndex++;
+
+            if (
+                selectedFileIndex >=
+                entries.length
+            ) {
+
+                selectedFileIndex =
+                    entries.length - 1;
+
+            }
+
+        } else {
+
+            selectedIndex++;
+
+            if (
+                selectedIndex >=
+                entries.length
+            ) {
+
+                selectedIndex =
+                    entries.length - 1;
+
+            }
+
+        }
+
+        updateSelection();
+
+        return;
+
+    }
+
+    // ARRIBA
+
+    if (
+        key === "arrowup" ||
+        key === "w"
+    ) {
+
+        if (mode === "computer") {
+
+            selectedFileIndex--;
+
+            if (
+                selectedFileIndex < 0
+            ) {
+
+                selectedFileIndex = 0;
+
+            }
+
+        } else {
+
+            selectedIndex--;
+
+            if (
+                selectedIndex < 0
+            ) {
+
+                selectedIndex = 0;
+
+            }
+
+        }
+
+        updateSelection();
+
+        return;
+
+    }
+
+    // ABRIR
+
+    if (key === "enter") {
+
+        e.preventDefault();
+
+        if (mode === "computer") {
+
+            openComputerFile(
+                currentComputer.files[
+                    selectedFileIndex
+                ]
+            );
+
+            return;
+
+        }
+
+        openDetail(
+            entries[selectedIndex]
+        );
+
+        return;
+
+    }
+
+}, true);
 
     document
         .getElementById("backButton")
@@ -471,14 +637,294 @@ if (key === "e") {
 
     panel.style.display = "block";
 
-    header.style.display = "block";
-    header.innerText = computer.name;
+   header.style.display = "none";
 
-    renderComputerFiles();
+    consoleInput = "";
+    consoleOutput = "";
+consoleState = "command";
+typedUsername = "";
+currentUser = null;
+
+
+if (computer.accessMode === "message") {
+    renderComputerMessage();
+    return;
+}
+
+renderComputerConsole();
+
+}
+
+function renderComputerConsole() {
+
+    const list =
+        document.getElementById("itemList");
+
+    const detail =
+        document.getElementById("itemDetail");
+
+    const header =
+        document.getElementById("terminalHeader");
+
+    list.innerHTML = "";
+    list.style.display = "block";
+    detail.style.display = "none";
+    header.style.display = "none";
+
+    let prompt = ">";
+
+    if (consoleState === "username") {
+        prompt = "USERNAME>";
+    }
+
+    if (consoleState === "password") {
+        prompt = "PASSWORD>";
+    }
+
+    if (consoleState === "session") {
+        prompt = currentUser.role + ":/>";
+    }
+
+    const row =
+        document.createElement("div");
+
+    row.className = "consoleRow";
+
+    row.innerText =
+        (
+            consoleOutput
+                ? consoleOutput + "\n"
+                : ""
+        ) +
+        prompt + " " +
+
+(
+    consoleState === "password"
+        ? "*".repeat(
+            consoleInput.length
+        )
+        : consoleInput.toUpperCase()
+);
+
+    list.appendChild(row);
+
+}
+
+function renderComputerMessage() {
+
+    const list =
+        document.getElementById("itemList");
+
+    const detail =
+        document.getElementById("itemDetail");
+
+    const header =
+        document.getElementById("terminalHeader");
+
+    list.innerHTML = "";
+    list.style.display = "block";
+    detail.style.display = "none";
+    header.style.display = "block";
+
+    const row =
+        document.createElement("div");
+
+    row.className = "itemRow selected";
+
+    row.innerText =
+        currentComputer.message || "NO DATA";
+
+    list.appendChild(row);
+
+}
+
+function executeComputerCommand(command) {
+
+    if (consoleState === "command") {
+
+        if (command === "LOGIN") {
+            consoleOutput = "";
+            consoleState = "username";
+            consoleInput = "";
+            renderComputerConsole();
+            return;
+        }
+
+        consoleOutput = "";
+        consoleInput = "";
+        renderComputerConsole();
+        return;
+    }
+
+    if (consoleState === "username") {
+
+        typedUsername = command;
+        consoleOutput = "";
+        consoleState = "password";
+        consoleInput = "";
+        renderComputerConsole();
+        return;
+    }
+
+    if (consoleState === "password") {
+
+        const user =
+            currentComputer.users.find(user =>
+                user.username === typedUsername &&
+                user.password === command
+            );
+
+        if (user) {
+            currentUser = user;
+            consoleOutput = "";
+            consoleState = "session";
+            consoleInput = "";
+            renderComputerConsole();
+            return;
+        }
+
+        typedUsername = "";
+        consoleOutput = "";
+        consoleState = "command";
+        consoleInput = "";
+        renderComputerConsole();
+        return;
+    }
+
+    if (consoleState === "session") {
+
+        if (command === "HELP") {
+
+            consoleOutput =
+    "APPEND\n" +
+"ATTRIB\n" +
+"COPY\n" +
+"DIR\n" +
+"ERASE\n" +
+"FORMAT\n" +
+"INTERROGATE\n" +
+"LIB\n" +
+"NOTES\n" +
+"PLAY\n" +
+"RENAME\n" +
+"TAPEDISK";
+
+            consoleInput = "";
+            renderComputerConsole();
+            return;
+        }
+
+        if (command === "DIR" || command === "LS") {
+
+            consoleOutput =
+                currentComputer.files.length +
+                " FILE(S)\n\n" +
+                currentComputer.files
+                    .map(file => file.name)
+                    .join("\n");
+
+            consoleInput = "";
+            renderComputerConsole();
+            return;
+        }
+
+         if (command.startsWith("TYPE ")) {
+
+    const fileName =
+        command
+            .replace("TYPE ", "")
+            .trim();
+
+    const file =
+        currentComputer.files.find(file =>
+            file.name.toUpperCase() === fileName
+        );
+
+    if (!file) {
+        consoleOutput = "";
+        consoleInput = "";
+        renderComputerConsole();
+        return;
+    }
+
+    consoleOutput =
+        file.content;
+
+    consoleInput = "";
+    renderComputerConsole();
+    return;
+}
+
+        if (command.startsWith("OPEN ")) {
+
+    const fileName =
+        command
+            .replace("OPEN ", "")
+            .trim();
+
+    const fileIndex =
+        currentComputer.files.findIndex(file =>
+            file.name.toUpperCase() === fileName
+        );
+
+    if (fileIndex === -1) {
+        consoleOutput = "";
+        consoleInput = "";
+        renderComputerConsole();
+        return;
+    }
+
+    selectedFileIndex = fileIndex;
+
+    openComputerFile(
+        currentComputer.files[fileIndex]
+    );
+
+    consoleInput = "";
+
+    return;
+}
+
+        if (command === "CLS" || command === "CLEAR") {
+
+    consoleOutput = "";
+    consoleInput = "";
+    renderComputerConsole();
+    return;
+}
+
+        if (command === "LOGOUT" || command === "EXIT") {
+            consoleOutput = "";
+            consoleState = "command";
+            currentUser = null;
+            typedUsername = "";
+            consoleInput = "";
+            renderComputerConsole();
+            return;
+        }
+
+        if (command === "IP") {
+
+    consoleOutput =
+        currentComputer.ip ||
+        "NO IP ASSIGNED";
+
+    consoleInput = "";
+    renderComputerConsole();
+    return;
+}
+
+        consoleOutput = "";
+        consoleInput = "";
+        renderComputerConsole();
+        return;
+    }
 
 }
 
 function renderComputerFiles() {
+
+    consoleState = "files";
 
     const list =
         document.getElementById("itemList");
@@ -556,7 +1002,8 @@ editor.selectionEnd = 0;
     isActive,
     draw,
     openComputer,
-     isComputerMode
+     isComputerMode,
+     openInventory
 };
 
 })();

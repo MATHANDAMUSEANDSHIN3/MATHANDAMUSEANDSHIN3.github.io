@@ -285,6 +285,15 @@ canvas {
     cursor: pointer;
 }
 
+.consoleRow {
+    background: transparent;
+    color: inherit;
+}
+
+.consoleRow:hover {
+    background: transparent;
+}
+
 /* FONT */
 
 @font-face {

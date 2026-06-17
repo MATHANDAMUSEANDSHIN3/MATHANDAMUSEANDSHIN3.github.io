@@ -82,67 +82,92 @@ let transitionLock = false;
 
 window.addEventListener("keydown", (e) => {
 
-   if (transitionLock) {
+    if (transitionLock) {
         return;
     }
 
-  const key = e.key.toLowerCase();
-  keys[key] = true;
+    const key =
+        e.key.toLowerCase();
 
-  if (TerminalSystem.isActive()) {
-    return;
-}
+    if (TerminalSystem.isActive()) {
 
-  if (key === "l") {
+        // If focus is inside the terminal editor (or any input), allow the element to receive keys
+        const activeElem = document.activeElement;
+        if (activeElem && (activeElem.id === "codeEditor" || activeElem.tagName === "TEXTAREA" || activeElem.tagName === "INPUT")) {
+            // Let the focused input handle the event; do not update game keys
+            return;
+        }
 
-    const playerRect = {
+        e.preventDefault();
 
-      x: playerX - bgX,
-      y: playerY - bgY,
-      width: playerWidth,
-      height: playerHeight
-
-    };
-
-    if (GameState.interactionLock) {
-
-    GameState.interactionLock = false;
-
-    if (DialogSystem.isActive()) {
-
-        DialogSystem.toggle(
-            "Access denied",
-            ctx
-        );
-
-    }
-
-    return;
-}
-
-
-    if (currentItem) {
-
-    const itemData = ItemDatabase[currentItem.itemId];
-
-    if (!itemData) {
-        console.log("ITEM DATA NOT FOUND:", currentItem.itemId);
         return;
     }
 
-    InventorySystem.addItem(itemData);
+    keys[key] = true;
 
-    console.log("ITEM PICKED:", itemData.name);
+    if (key === "enter") {
 
-    maps[currentMap].items =
-        maps[currentMap].items.filter(item =>
-            item !== currentItem
-        );
+          console.log("ENTER WORLD", {
+    terminal: TerminalSystem.isActive(),
+    pendingDoor: GameState.pendingDoor,
+    terminalMode: GameState.terminalMode,
+    interactionLock: GameState.interactionLock
+});
 
-    currentItem = null;
+        const playerRect = {
 
-    return;
-}
+            x: playerX - bgX,
+            y: playerY - bgY,
+            width: playerWidth,
+            height: playerHeight
+
+        };
+
+        if (GameState.interactionLock) {
+
+            GameState.interactionLock = false;
+
+            if (DialogSystem.isActive()) {
+
+                DialogSystem.toggle(
+                    "Access denied",
+                    ctx
+                );
+
+            }
+
+            return;
+        }
+
+        if (currentItem) {
+
+            const itemData =
+                ItemDatabase[currentItem.itemId];
+
+            if (!itemData) {
+                console.log(
+                    "ITEM DATA NOT FOUND:",
+                    currentItem.itemId
+                );
+                return;
+            }
+
+            InventorySystem.addItem(itemData);
+
+            console.log(
+                "ITEM PICKED:",
+                itemData.name
+            );
+
+            maps[currentMap].items =
+                maps[currentMap].items.filter(item =>
+                    item !== currentItem
+                );
+
+            currentItem = null;
+
+            return;
+        }
 
     // BUSCAR PUERTA
 
@@ -157,12 +182,16 @@ window.addEventListener("keydown", (e) => {
 
    if (door) {
 
+    console.log("DOOR DETECTED:", door);
+
     if (door.requiredPin) {
 
         GameState.pendingDoor = door;
         GameState.terminalMode = "useItem";
 
-        TerminalSystem.toggle();
+        console.log("About to call TerminalSystem.openInventory", { terminalActive: TerminalSystem.isActive(), pendingDoor: GameState.pendingDoor, terminalMode: GameState.terminalMode });
+        TerminalSystem.openInventory();
+        console.log("Called TerminalSystem.openInventory", { terminalActive: TerminalSystem.isActive() });
 
         return;
     }
@@ -252,6 +281,7 @@ window.addEventListener("keydown", (e) => {
 
 }
   }
+
 
 
 

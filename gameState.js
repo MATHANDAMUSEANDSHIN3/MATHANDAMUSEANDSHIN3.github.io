@@ -2,7 +2,7 @@ const GameState = {
 
   currentMap: "dulce_house",
 
-  debugMode: true,
+  debugMode: false,
 
   hackingUnlocked: false,
 
