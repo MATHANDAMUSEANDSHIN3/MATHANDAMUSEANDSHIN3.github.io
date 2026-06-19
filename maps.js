@@ -35,6 +35,9 @@ const maps = {
         y: 300,
         width: 64,
         height: 160,
+        type: "npc",
+    name: "Mom",
+    sprite: "temporal_mom.png",
         text:
           "MOM: A lot of strange things have been happening these past few days. I've heard rumors that animals have been getting sick. Take good care of your pet!.\n\n\nDULCE: Sure, it´s my best friend."
       },
@@ -50,8 +53,9 @@ const maps = {
       {
    x: 80,
    y: 736,
-   width: 32,
-  height: 32,
+   width: 128,
+  height: 128,
+  sprite: "computer.gif",
     type: "computer",
     name: "Living room Computer",
     hostname: "OFFICE-PC",

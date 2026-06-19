@@ -28,7 +28,9 @@ bagButton.addEventListener("click", () => {
 
     if (DialogSystem.isActive()) return;
 
-    if (TerminalSystem.isComputerMode()) return;
+    if (ConfirmDialogSystem.isActive()) return;
+
+    SoundSystem.play("open");
 
     TerminalSystem.toggle();
 
@@ -75,6 +77,24 @@ const frameSpeed = 16;
 const maxWalkFrame = 7;
 const maxIdleFrame = 3;
 
+const SpriteCache = {};
+
+function getSprite(src) {
+
+    if (!SpriteCache[src]) {
+
+        SpriteCache[src] =
+            new Image();
+
+        SpriteCache[src].src =
+            src;
+
+    }
+
+    return SpriteCache[src];
+
+}
+
 // TECLAS
 
 let accessDenied = false;
@@ -88,6 +108,35 @@ window.addEventListener("keydown", (e) => {
 
     const key =
         e.key.toLowerCase();
+
+  if (ConfirmDialogSystem.isActive()) {
+
+    e.preventDefault();
+
+    if (
+        key === "arrowup" ||
+        key === "w"
+    ) {
+        ConfirmDialogSystem.moveSelection(-1);
+        return;
+    }
+
+    if (
+        key === "arrowdown" ||
+        key === "s"
+    ) {
+        ConfirmDialogSystem.moveSelection(1);
+        return;
+    }
+
+    if (key === "enter") {
+        ConfirmDialogSystem.confirm();
+        return;
+    }
+
+
+    return;
+}   
 
     if (TerminalSystem.isActive()) {
 
@@ -107,12 +156,7 @@ window.addEventListener("keydown", (e) => {
 
     if (key === "enter") {
 
-          console.log("ENTER WORLD", {
-    terminal: TerminalSystem.isActive(),
-    pendingDoor: GameState.pendingDoor,
-    terminalMode: GameState.terminalMode,
-    interactionLock: GameState.interactionLock
-});
+    
 
         const playerRect = {
 
@@ -144,21 +188,13 @@ window.addEventListener("keydown", (e) => {
             const itemData =
                 ItemDatabase[currentItem.itemId];
 
-            if (!itemData) {
-                console.log(
-                    "ITEM DATA NOT FOUND:",
-                    currentItem.itemId
-                );
-                return;
-            }
+           
 
             InventorySystem.addItem(itemData);
 
-            console.log(
-                "ITEM PICKED:",
-                itemData.name
-            );
+SoundSystem.play("open");
 
+            
             maps[currentMap].items =
                 maps[currentMap].items.filter(item =>
                     item !== currentItem
@@ -182,19 +218,23 @@ window.addEventListener("keydown", (e) => {
 
    if (door) {
 
-    console.log("DOOR DETECTED:", door);
 
-    if (door.requiredPin) {
+  if (door.requiredPin) {
 
-        GameState.pendingDoor = door;
-        GameState.terminalMode = "useItem";
+    ConfirmDialogSystem.open(
+        "Do you want to open this door?",
+        () => {
 
-        console.log("About to call TerminalSystem.openInventory", { terminalActive: TerminalSystem.isActive(), pendingDoor: GameState.pendingDoor, terminalMode: GameState.terminalMode });
-        TerminalSystem.openInventory();
-        console.log("Called TerminalSystem.openInventory", { terminalActive: TerminalSystem.isActive() });
+            GameState.pendingDoor = door;
+            GameState.terminalMode = "useItem";
 
-        return;
-    }
+            TerminalSystem.openInventory();
+
+        }
+    );
+
+    return;
+}
 
     changeMap(
         door.targetMap,
@@ -268,11 +308,13 @@ window.addEventListener("keydown", (e) => {
 
   if (zone.type === "computer") {
 
+    SoundSystem.play("computer");
+
     TerminalSystem.openComputer(zone);
 
     return;
 
-  }
+}
 
   DialogSystem.toggle(
     zone.text || "Sin texto",
@@ -304,10 +346,7 @@ canvas.addEventListener(
         if (!TerminalSystem.isActive())
             return;
 
-        console.log(
-            e.offsetX,
-            e.offsetY
-        );
+        
 
     }
 );
@@ -572,6 +611,9 @@ const door = maps[currentMap].doors.find(door =>
   }
 }
 
+
+
+
 // DRAW
 function draw() {
 
@@ -648,6 +690,24 @@ function draw() {
 
 });
 
+//DRAW INTERACTIONS
+(maps[currentMap].interactions || []).forEach(zone => {
+
+    if (!zone.sprite) return;
+
+    const sprite =
+        getSprite(zone.sprite);
+
+    ctx.drawImage(
+        sprite,
+        Math.round(zone.x + bgX),
+        Math.round(zone.y + bgY),
+        zone.width,
+        zone.height
+    );
+
+});
+
 // DRAW PLAYER
   ctx.drawImage(
     playerSprite,
@@ -660,6 +720,9 @@ function draw() {
     playerWidth,
     playerHeight
   );
+
+
+
 
   // DEBUG COLLISIONS
 if (GameState.debugMode) {
@@ -748,6 +811,14 @@ if (GameState.debugMode) {
     canvasWidth,
     canvasHeight - 32
   );
+
+ConfirmDialogSystem.draw(
+    ctx,
+    canvasWidth,
+    canvasHeight - 32
+);
+
+
 
   // TERMINAL
   TerminalSystem.draw(

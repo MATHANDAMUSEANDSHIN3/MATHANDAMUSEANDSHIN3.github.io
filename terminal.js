@@ -793,6 +793,35 @@ function executeComputerCommand(command) {
 
     if (consoleState === "session") {
 
+        if (command.startsWith("EDIT ")) {
+
+    const fileName =
+        command
+            .replace("EDIT ", "")
+            .trim();
+
+    const fileIndex =
+        currentComputer.files.findIndex(file =>
+            file.name.toUpperCase() === fileName
+        );
+
+    if (fileIndex === -1) {
+        consoleInput = "";
+        renderComputerConsole();
+        return;
+    }
+
+    selectedFileIndex = fileIndex;
+
+    openComputerFile(
+        currentComputer.files[fileIndex]
+    );
+
+    consoleInput = "";
+
+    return;
+}
+
         if (command === "HELP") {
 
             consoleOutput =
@@ -828,7 +857,7 @@ function executeComputerCommand(command) {
             return;
         }
 
-         if (command.startsWith("TYPE ")) {
+         if (command.startsWith("TYPE " || command === "READ")) {
 
     const fileName =
         command
