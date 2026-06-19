@@ -5,6 +5,7 @@ let consoleState = "command";
 let typedUsername = "";
 let currentUser = null;
 let consoleOutput = "";
+let editingFile = null;
 
     let active = false;
     let selectedIndex = 0;
@@ -17,19 +18,24 @@ function isComputerMode() {
     return mode === "computer";
 }
 
-    function toggle() {
-        active = !active;
+  function toggle() {
 
-        const panel = document.getElementById("terminalPanel");
+    active = !active;
 
-        if (active) {
-            panel.style.display = "block";
-            renderList();
-        } else {
-            panel.style.display = "none";
-            backToList();
-        }
+    const panel =
+        document.getElementById("terminalPanel");
+
+    if (active) {
+
+        panel.style.display = "block";
+        renderList();
+
+    } else {
+
+        close();
+
     }
+}
 
     function isActive() {
         return active;
@@ -38,6 +44,7 @@ function isComputerMode() {
 function close() {
 
     active = false;
+    editingFile = null;
 
     mode = "inventory";
     currentComputer = null;
@@ -154,6 +161,11 @@ function close() {
         editor.dataset.itemIndex = selectedIndex;
 
         editor.focus();
+
+document.getElementById("backButton").style.display = "inline-block";
+document.getElementById("compileButton").style.display = "inline-block";
+document.getElementById("useButton").style.display = "inline-block";
+
     }
 
     function backToList() {
@@ -194,6 +206,10 @@ if (mode === "computer") {
         file.content
     );
 
+    document.getElementById("backButton").style.display = "inline-block";
+document.getElementById("compileButton").style.display = "inline-block";
+document.getElementById("useButton").style.display = "inline-block";
+
     close();
 
     return;
@@ -201,11 +217,6 @@ if (mode === "computer") {
 
 function openInventory() {
 
-    console.log("TerminalSystem.openInventory called (start)", {
-        pendingDoor: GameState.pendingDoor,
-        terminalMode: GameState.terminalMode,
-        active
-    });
 
     active = true;
     mode = "inventory";
@@ -414,6 +425,32 @@ function useCurrentItem() {
 
     const editor =
         document.getElementById("codeEditor");
+
+     if (
+    mode === "computer" &&
+    editingFile &&
+    document.activeElement === editor &&
+    e.ctrlKey &&
+    e.key.toLowerCase() === "enter"
+) {
+
+    e.preventDefault();
+
+    editingFile.content =
+        editor.value;
+
+    editingFile = null;
+
+    consoleOutput =
+        "FILE SAVED";
+
+    consoleInput = "";
+    consoleState = "session";
+
+    renderComputerConsole();
+
+    return;
+}   
 
     if (document.activeElement === editor) {
         return;
@@ -636,8 +673,11 @@ if (key === "escape") {
         document.getElementById("terminalHeader");
 
     panel.style.display = "block";
-
    header.style.display = "none";
+
+   document.getElementById("backButton").style.display = "none";
+document.getElementById("compileButton").style.display = "none";
+document.getElementById("useButton").style.display = "none";
 
     consoleInput = "";
     consoleOutput = "";
@@ -793,7 +833,7 @@ function executeComputerCommand(command) {
 
     if (consoleState === "session") {
 
-        if (command.startsWith("EDIT ")) {
+if (command.startsWith("EDIT ")) {
 
     const fileName =
         command
@@ -811,13 +851,14 @@ function executeComputerCommand(command) {
         return;
     }
 
-    selectedFileIndex = fileIndex;
+    selectedFileIndex =
+        fileIndex;
+
+    consoleInput = "";
 
     openComputerFile(
         currentComputer.files[fileIndex]
     );
-
-    consoleInput = "";
 
     return;
 }
@@ -857,7 +898,7 @@ function executeComputerCommand(command) {
             return;
         }
 
-         if (command.startsWith("TYPE " || command === "READ")) {
+         if (command.startsWith("TYPE ")) {
 
     const fileName =
         command
@@ -995,6 +1036,8 @@ function renderComputerFiles() {
 }
 
 function openComputerFile(file) {
+
+      editingFile = file;
 
     const list =
         document.getElementById("itemList");
