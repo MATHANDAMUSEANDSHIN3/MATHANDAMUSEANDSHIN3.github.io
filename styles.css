@@ -294,6 +294,43 @@ canvas {
     background: transparent;
 }
 
+#terminalCursor {
+
+    display: inline-block;
+
+    width: 12px;
+    height: 12px;
+
+    background: #fff599;
+
+    margin-left: 4px;
+
+    vertical-align: middle;
+
+    animation:
+        terminalBlink
+        0.8s
+        steps(1)
+        infinite;
+
+}
+
+@keyframes terminalBlink {
+
+    0% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
+
+}
+
 /* FONT */
 
 @font-face {

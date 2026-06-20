@@ -14,6 +14,9 @@ let editingFile = null;
 let currentComputer = null;
 let selectedFileIndex = 0;
 
+let cursorVisible = true;
+let lastCursorBlink = 0;
+
 function isComputerMode() {
     return mode === "computer";
 }
@@ -426,7 +429,7 @@ function useCurrentItem() {
     const editor =
         document.getElementById("codeEditor");
 
-     if (
+ if (
     mode === "computer" &&
     editingFile &&
     document.activeElement === editor &&
@@ -450,7 +453,29 @@ function useCurrentItem() {
     renderComputerConsole();
 
     return;
-}   
+}  
+
+if (
+    mode === "computer" &&
+    document.activeElement === editor &&
+    e.ctrlKey &&
+    e.key.toLowerCase() === "q"
+) {
+
+    e.preventDefault();
+
+    editingFile = null;
+
+    consoleOutput =
+        "EDIT CANCELLED";
+
+    consoleInput = "";
+    consoleState = "session";
+
+    renderComputerConsole();
+
+    return;
+}
 
     if (document.activeElement === editor) {
         return;
@@ -730,21 +755,29 @@ function renderComputerConsole() {
 
     row.className = "consoleRow";
 
-    row.innerText =
-        (
-            consoleOutput
-                ? consoleOutput + "\n"
-                : ""
-        ) +
-        prompt + " " +
+  const displayInput =
 
-(
     consoleState === "password"
+
         ? "*".repeat(
             consoleInput.length
         )
-        : consoleInput.toUpperCase()
-);
+
+        : consoleInput.toUpperCase();
+
+row.innerHTML =
+
+    (
+        consoleOutput
+            ? consoleOutput.replace(/\n/g, "<br>") + "<br>"
+            : ""
+    ) +
+
+    prompt + " " +
+
+    displayInput +
+
+    `<span id="terminalCursor"></span>`;
 
     list.appendChild(row);
 
@@ -863,6 +896,31 @@ if (command.startsWith("EDIT ")) {
     return;
 }
 
+if (command === "ITEMS") {
+
+    const items =
+        InventorySystem.getItems();
+
+    if (items.length === 0) {
+        consoleOutput =
+            "NO ITEMS";
+        consoleInput = "";
+        renderComputerConsole();
+        return;
+    }
+
+    consoleOutput =
+        items
+            .map((item, index) =>
+                index + " " + item.name
+            )
+            .join("\n");
+
+    consoleInput = "";
+    renderComputerConsole();
+    return;
+}
+
         if (command === "HELP") {
 
             consoleOutput =
@@ -897,6 +955,45 @@ if (command.startsWith("EDIT ")) {
             renderComputerConsole();
             return;
         }
+
+        if (command.startsWith("TYPE ITEM ")) {
+
+    const itemIndex =
+        Number(
+            command
+                .replace("TYPE ITEM ", "")
+                .trim()
+        );
+
+    const items =
+        InventorySystem.getItems();
+
+    const item =
+        items[itemIndex];
+
+    if (!item) {
+        consoleInput = "";
+        renderComputerConsole();
+        return;
+    }
+
+    consoleOutput =
+        Object.keys(item)
+            .filter(key =>
+                key !== "id" &&
+                key !== "type"
+            )
+            .map(key =>
+                key.toUpperCase() +
+                " = " +
+                item[key]
+            )
+            .join("\n");
+
+    consoleInput = "";
+    renderComputerConsole();
+    return;
+}
 
          if (command.startsWith("TYPE ")) {
 

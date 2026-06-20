@@ -575,14 +575,9 @@ const item = (maps[currentMap].items || []).find(item =>
 
 
 if (item) {
-
-    console.log("ITEM DETECTED:", item.itemId);
     currentItem = item;
-
 } else {
-
     currentItem = null;
-
 }
 
 
