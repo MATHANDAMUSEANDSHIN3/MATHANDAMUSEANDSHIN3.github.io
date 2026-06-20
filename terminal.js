@@ -17,6 +17,8 @@ let selectedFileIndex = 0;
 let cursorVisible = true;
 let lastCursorBlink = 0;
 
+let editingItem = null;
+
 function isComputerMode() {
     return mode === "computer";
 }
@@ -48,6 +50,7 @@ function close() {
 
     active = false;
     editingFile = null;
+    editingItem = null;
 
     mode = "inventory";
     currentComputer = null;
@@ -105,9 +108,9 @@ function close() {
             });
 
             row.addEventListener("click", () => {
-                selectedIndex = index;
-                openDetail(item);
-            });
+    selectedIndex = index;
+    useCurrentItem();
+});
 
             list.appendChild(row);
         });
@@ -165,9 +168,6 @@ function close() {
 
         editor.focus();
 
-document.getElementById("backButton").style.display = "inline-block";
-document.getElementById("compileButton").style.display = "inline-block";
-document.getElementById("useButton").style.display = "inline-block";
 
     }
 
@@ -203,15 +203,7 @@ if (mode === "computer") {
     file.content =
         editor.value;
 
-    console.log(
-        "FILE SAVED:",
-        file.name,
-        file.content
-    );
 
-    document.getElementById("backButton").style.display = "inline-block";
-document.getElementById("compileButton").style.display = "inline-block";
-document.getElementById("useButton").style.display = "inline-block";
 
     close();
 
@@ -249,12 +241,6 @@ function openInventory() {
         updateSelection();
     }
 
-    console.log("TerminalSystem.openInventory called (end)", {
-        active,
-        panelDisplay: panel ? panel.style.display : null,
-        itemsCount: items.length,
-        selectedIndex
-    });
 
 }
 
@@ -276,11 +262,6 @@ function openInventory() {
         file.content =
             editor.value;
 
-        console.log(
-            "FILE SAVED:",
-            file.name,
-            file.content
-        );
 
         close();
 
@@ -338,11 +319,8 @@ function openInventory() {
         }
 
         item[key] = value;
-
-        console.log("SET:", key, value);
+       
     });
-
-    console.log("ITEM AFTER COMPILE:", item);
 
     close();
 
@@ -350,27 +328,16 @@ function openInventory() {
 
 function useCurrentItem() {
 
-    const editor =
-        document.getElementById("codeEditor");
+   const items =
+    InventorySystem.getItems();
 
-    const items =
-        InventorySystem.getItems();
-
-    const index =
-        Number(editor.dataset.itemIndex);
-
-    const item =
-        items[index];
+const item =
+    items[selectedIndex];
 
     if (!item) return;
 
     if (!GameState.pendingDoor) {
 
-        console.log(
-            "ITEM USED:",
-            item.name,
-            item.pin
-        );
 
         return;
     }
@@ -380,7 +347,6 @@ function useCurrentItem() {
 
     if (item.pin === door.requiredPin) {
 
-        console.log("ACCESS GRANTED");
 
         const targetMap =
             door.targetMap;
@@ -404,20 +370,22 @@ function useCurrentItem() {
 
     } else {
 
-    console.log("ACCESS DENIED");
-
     GameState.pendingDoor = null;
     GameState.terminalMode = "normal";
     GameState.interactionLock = true;
 
     close();
 
+setTimeout(() => {
+
     DialogSystem.toggle(
         "Access denied",
         ctx
     );
 
-    return;
+}, 0);
+
+return;
 }
 
 }
@@ -429,9 +397,8 @@ function useCurrentItem() {
     const editor =
         document.getElementById("codeEditor");
 
- if (
+if (
     mode === "computer" &&
-    editingFile &&
     document.activeElement === editor &&
     e.ctrlKey &&
     e.key.toLowerCase() === "enter"
@@ -439,21 +406,80 @@ function useCurrentItem() {
 
     e.preventDefault();
 
-    editingFile.content =
-        editor.value;
+    if (editingFile) {
 
-    editingFile = null;
+        editingFile.content =
+            editor.value;
 
-    consoleOutput =
-        "FILE SAVED";
+        editingFile = null;
 
-    consoleInput = "";
-    consoleState = "session";
+        consoleOutput =
+            "FILE SAVED";
 
-    renderComputerConsole();
+        consoleInput = "";
+        consoleState = "session";
 
-    return;
-}  
+        renderComputerConsole();
+
+        return;
+    }
+
+    if (editingItem) {
+
+        const lines =
+            editor.value.split("\n");
+
+        lines.forEach(line => {
+
+            const cleanLine =
+                line.trim();
+
+            if (cleanLine === "") return;
+            if (cleanLine.startsWith("//")) return;
+
+            const parts =
+                cleanLine.split("=");
+
+            if (parts.length < 2) return;
+
+            const key =
+                parts[0]
+                    .trim()
+                    .toLowerCase();
+
+            let value =
+                parts
+                    .slice(1)
+                    .join("=")
+                    .trim();
+
+            if (
+                value.startsWith('"') &&
+                value.endsWith('"')
+            ) {
+                value =
+                    value.slice(1, -1);
+            }
+
+            editingItem[key] =
+                value;
+
+        });
+
+        editingItem = null;
+
+        consoleOutput =
+            "ITEM SAVED";
+
+        consoleInput = "";
+        consoleState = "session";
+
+        renderComputerConsole();
+
+        return;
+    }
+
+} 
 
 if (
     mode === "computer" &&
@@ -465,6 +491,7 @@ if (
     e.preventDefault();
 
     editingFile = null;
+    editingItem = null;
 
     consoleOutput =
         "EDIT CANCELLED";
@@ -657,9 +684,7 @@ if (key === "escape") {
 
         }
 
-        openDetail(
-            entries[selectedIndex]
-        );
+        useCurrentItem();
 
         return;
 
@@ -667,17 +692,6 @@ if (key === "escape") {
 
 }, true);
 
-    document
-        .getElementById("backButton")
-        .addEventListener("click", backToList);
-
-    document
-        .getElementById("compileButton")
-        .addEventListener("click", compileCurrentItem);
-
-    document
-    .getElementById("useButton")
-    .addEventListener("click", useCurrentItem);
         
 
     function draw() {
@@ -700,10 +714,7 @@ if (key === "escape") {
     panel.style.display = "block";
    header.style.display = "none";
 
-   document.getElementById("backButton").style.display = "none";
-document.getElementById("compileButton").style.display = "none";
-document.getElementById("useButton").style.display = "none";
-
+  
     consoleInput = "";
     consoleOutput = "";
 consoleState = "command";
@@ -813,7 +824,7 @@ function renderComputerMessage() {
 
 function executeComputerCommand(command) {
 
-    if (consoleState === "command") {
+      if (consoleState === "command") {
 
         if (command === "LOGIN") {
             consoleOutput = "";
@@ -829,7 +840,7 @@ function executeComputerCommand(command) {
         return;
     }
 
-    if (consoleState === "username") {
+       if (consoleState === "username") {
 
         typedUsername = command;
         consoleOutput = "";
@@ -839,7 +850,7 @@ function executeComputerCommand(command) {
         return;
     }
 
-    if (consoleState === "password") {
+     if (consoleState === "password") {
 
         const user =
             currentComputer.users.find(user =>
@@ -864,7 +875,64 @@ function executeComputerCommand(command) {
         return;
     }
 
-    if (consoleState === "session") {
+     if (consoleState === "session") {
+
+
+        if (command === "ITEMS") {
+
+    const items =
+        InventorySystem.getItems();
+
+    if (items.length === 0) {
+        consoleOutput =
+            "NO ITEMS";
+        consoleInput = "";
+        renderComputerConsole();
+        return;
+    }
+
+    consoleOutput =
+        items
+            .map((item, index) =>
+                index + " " + item.name
+            )
+            .join("\n");
+
+    consoleInput = "";
+    renderComputerConsole();
+    return;
+}
+
+        if (command.startsWith("EDIT ITEM ")) {
+
+    const itemIndex =
+        Number(
+            command
+                .replace("EDIT ITEM ", "")
+                .trim()
+        );
+
+    const items =
+        InventorySystem.getItems();
+
+    const item =
+        items[itemIndex];
+
+    if (!item) {
+        consoleInput = "";
+        renderComputerConsole();
+        return;
+    }
+
+    consoleInput = "";
+
+    openInventoryItemEditor(
+        item,
+        itemIndex
+    );
+
+    return;
+}
 
 if (command.startsWith("EDIT ")) {
 
@@ -893,31 +961,6 @@ if (command.startsWith("EDIT ")) {
         currentComputer.files[fileIndex]
     );
 
-    return;
-}
-
-if (command === "ITEMS") {
-
-    const items =
-        InventorySystem.getItems();
-
-    if (items.length === 0) {
-        consoleOutput =
-            "NO ITEMS";
-        consoleInput = "";
-        renderComputerConsole();
-        return;
-    }
-
-    consoleOutput =
-        items
-            .map((item, index) =>
-                index + " " + item.name
-            )
-            .join("\n");
-
-    consoleInput = "";
-    renderComputerConsole();
     return;
 }
 
@@ -972,10 +1015,14 @@ if (command === "ITEMS") {
         items[itemIndex];
 
     if (!item) {
-        consoleInput = "";
-        renderComputerConsole();
-        return;
-    }
+
+    consoleOutput = "";
+    consoleInput = "";
+
+    renderComputerConsole();
+
+    return;
+}
 
     consoleOutput =
         Object.keys(item)
@@ -1129,6 +1176,50 @@ function renderComputerFiles() {
         list.appendChild(row);
 
     });
+
+}
+
+function openInventoryItemEditor(item, index) {
+
+    editingItem = item;
+    editingFile = null;
+
+    const list =
+        document.getElementById("itemList");
+
+    const detail =
+        document.getElementById("itemDetail");
+
+    const editor =
+        document.getElementById("codeEditor");
+
+    const header =
+        document.getElementById("terminalHeader");
+
+    list.style.display = "none";
+    detail.style.display = "block";
+    header.style.display = "none";
+
+   
+    editor.value =
+        Object.keys(item)
+            .filter(key =>
+                key !== "id" &&
+                key !== "type"
+            )
+            .map(key =>
+                key.toUpperCase() + " = " + item[key]
+            )
+            .join("\n");
+
+    editor.dataset.itemIndex =
+        index;
+
+    editor.scrollTop = 0;
+    editor.selectionStart = 0;
+    editor.selectionEnd = 0;
+
+    editor.focus();
 
 }
 

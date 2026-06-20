@@ -6,10 +6,6 @@ const InventorySystem = (function () {
 
     items.push({ ...item });
 
-    console.log(
-        "ITEM ADDED:",
-        item.name
-    );
 
 }
 

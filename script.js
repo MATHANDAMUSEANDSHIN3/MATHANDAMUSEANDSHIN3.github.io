@@ -138,7 +138,7 @@ window.addEventListener("keydown", (e) => {
     return;
 }   
 
-    if (TerminalSystem.isActive()) {
+  if (TerminalSystem.isActive()) {
 
         // If focus is inside the terminal editor (or any input), allow the element to receive keys
         const activeElem = document.activeElement;
@@ -154,9 +154,16 @@ window.addEventListener("keydown", (e) => {
 
     keys[key] = true;
 
-    if (key === "enter") {
+  if (key === "enter") {
 
-    
+    if (DialogSystem.isActive()) {
+
+    DialogSystem.close();
+
+    GameState.interactionLock = false;
+
+    return;
+}
 
         const playerRect = {
 
@@ -169,19 +176,19 @@ window.addEventListener("keydown", (e) => {
 
         if (GameState.interactionLock) {
 
-            GameState.interactionLock = false;
+    if (DialogSystem.isActive()) {
 
-            if (DialogSystem.isActive()) {
+        DialogSystem.close();
 
-                DialogSystem.toggle(
-                    "Access denied",
-                    ctx
-                );
+        GameState.interactionLock = false;
 
-            }
+        return;
+    }
 
-            return;
-        }
+    GameState.interactionLock = false;
+
+    return;
+}
 
         if (currentItem) {
 
@@ -323,9 +330,6 @@ SoundSystem.play("open");
 
 }
   }
-
-
-
 
 });
 
