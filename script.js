@@ -14,6 +14,13 @@ const canvasHeight = canvas.height;
 const playerWidth = 64;
 const playerHeight = 160;
 
+const playerCollisionBox = {
+    offsetX: 0,
+    offsetY: 128,
+    width: 64,
+    height: 32
+};
+
 const speed = 2;
 
 const diagonalX = 2;
@@ -78,6 +85,58 @@ const maxWalkFrame = 7;
 const maxIdleFrame = 3;
 
 const SpriteCache = {};
+
+function drawAnimatedSprite(obj) {
+
+    const sprite =
+        getSprite(obj.sprite);
+
+    if (
+        !obj.animated ||
+        !obj.frameWidth ||
+        !obj.frameHeight
+    ) {
+
+        ctx.drawImage(
+            sprite,
+            Math.round(obj.x + bgX),
+            Math.round(obj.y + bgY),
+            obj.width,
+            obj.height
+        );
+
+        return;
+    }
+
+    const speed =
+        obj.frameSpeed || 20;
+
+    const totalFrames =
+        obj.frames || 1;
+
+    const frame =
+        Math.floor(
+            Date.now() / (speed * 50)
+        ) % totalFrames;
+
+    const sx =
+        frame * obj.frameWidth;
+
+    const sy =
+        0;
+
+    ctx.drawImage(
+        sprite,
+        sx,
+        sy,
+        obj.frameWidth,
+        obj.frameHeight,
+        Math.round(obj.x + bgX),
+        Math.round(obj.y + bgY),
+        obj.width,
+        obj.height
+    );
+}
 
 function getSprite(src) {
 
@@ -166,13 +225,22 @@ window.addEventListener("keydown", (e) => {
 }
 
         const playerRect = {
+    x:
+        playerX -
+        bgX +
+        playerCollisionBox.offsetX,
 
-            x: playerX - bgX,
-            y: playerY - bgY,
-            width: playerWidth,
-            height: playerHeight
+    y:
+        playerY -
+        bgY +
+        playerCollisionBox.offsetY,
 
-        };
+    width:
+        playerCollisionBox.width,
+
+    height:
+        playerCollisionBox.height
+};
 
         if (GameState.interactionLock) {
 
@@ -444,12 +512,23 @@ if (
     directionIndex = dir;
   }
 
-  const futureRect = {
-    x: playerX - bgX,
-    y: playerY - bgY,
-    width: playerWidth,
-    height: playerHeight
-  };
+ const futureRect = {
+    x:
+        playerX -
+        bgX +
+        playerCollisionBox.offsetX,
+
+    y:
+        playerY -
+        bgY +
+        playerCollisionBox.offsetY,
+
+    width:
+        playerCollisionBox.width,
+
+    height:
+        playerCollisionBox.height
+};
 
   // MOVIMIENTO + COLISIONES
   if (dir !== -1) {
@@ -694,16 +773,7 @@ function draw() {
 
     if (!zone.sprite) return;
 
-    const sprite =
-        getSprite(zone.sprite);
-
-    ctx.drawImage(
-        sprite,
-        Math.round(zone.x + bgX),
-        Math.round(zone.y + bgY),
-        zone.width,
-        zone.height
-    );
+    drawAnimatedSprite(zone);
 
 });
 
@@ -793,13 +863,19 @@ if (GameState.debugMode) {
 //DEBUG CHARACTER
 if (GameState.debugMode) {
 
-    ctx.fillStyle = "rgba(255,255,0,0.3)";
+    ctx.fillStyle =
+        "rgba(255,0,0,0.4)";
 
     ctx.fillRect(
-        drawPlayerX,
-        drawPlayerY,
-        playerWidth,
-        playerHeight
+        drawPlayerX +
+        playerCollisionBox.offsetX,
+
+        drawPlayerY +
+        playerCollisionBox.offsetY,
+
+        playerCollisionBox.width,
+
+        playerCollisionBox.height
     );
 
 }

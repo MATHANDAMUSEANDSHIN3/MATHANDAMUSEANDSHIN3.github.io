@@ -6,15 +6,15 @@ const maps = {
     height: 1600,
     collisions: [
 
-      [32, 640, 384, 32],
-      [544, 640, 256, 32],
-      [32, 1056, 1088, 32],
-      [1120, 640, 32, 416],
-      [256, 160, 32, 288],
-      [672, 160, 32, 288],
-      [416, 96, 128, 32],
-      [384, 512, 32, 128],
-      [544, 512, 32, 128],
+      [32, 784, 384, 16],
+      [544, 784, 256, 16],
+      [32, 1056, 1088, 16],
+      [1120, 640, 16, 416],
+      [256, 160, 16, 288],
+      [672, 160, 16, 288],
+      [416, 240, 128, 16],
+      [384, 512, 16, 128],
+      [544, 512, 16, 128],
       [800, 640, 16, 16],
       [832, 624, 16, 16],
       [864, 592, 16, 16],
@@ -46,7 +46,7 @@ const maps = {
         x: 416,
         y: 1056,
         width: 128,
-        height: 32,
+        height: 16,
         text: "This door is sealed by a mystery force."
       },
 
@@ -55,8 +55,13 @@ const maps = {
    y: 736,
    width: 128,
   height: 128,
-  sprite: "computer.gif",
+  sprite: "computer.png",
+  frameWidth: 128,
+frameHeight: 128,
+frames: 4,
+frameSpeed: 5,
     type: "computer",
+     animated: true,
     name: "Living room Computer",
     hostname: "OFFICE-PC",
 ip: "192.168.2.10",
@@ -116,7 +121,7 @@ items: [
 
   {
     x: 864,
-    y: 608,
+    y: 736,
     width: 64,
     height: 32,
 
@@ -130,8 +135,8 @@ items: [
 
   },
   {
-    x: 576,
-    y: 144,
+    x: 544,
+    y: 256,
     width: 64,
     height: 32,
 
@@ -147,7 +152,7 @@ items: [
    spawnY: 448,
 
   requiredPin: "2345",
-  sprite: "sealed_door.png",
+  //sprite: "sealed_door.png",
   }
 
 ]
