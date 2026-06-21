@@ -1,7 +1,7 @@
 const maps = {
 
   dulce_house: {
-    background: "background2.png",
+    background: "background22.png",
     width: 1920,
     height: 1600,
     collisions: [
